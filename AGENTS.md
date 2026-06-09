@@ -1,5 +1,5 @@
-## LyraApp - Online/Offline Müzik Çalar Uygulaması
-### Bu repository LyraApp adında bir müzik çalar uygulamasının kaynak kodlarını içermektedir. Bu agents.md dosyası bu projede çalışan insan/ai herkesin uyması ZORUNDA olduğu genel kuralları içerir.
+# LyraApp - Online/Offline Müzik Çalar Uygulaması
+> Bu repository LyraApp adında bir müzik çalar uygulamasının kaynak kodlarını içermektedir. Bu agents.md dosyası bu projede çalışan insan/ai herkesin uyması ZORUNDA olduğu genel kuralları içerir.
 ---
 
 ## 1) TEKNOLOJİ YIĞINI
@@ -28,3 +28,16 @@ Kod üretmeden önce şunları yapmak zorundasın;
 - Eğer varsa yeni bağımlılıklar matrisi (Hangi kütüphane, versiyon + neden)
 
 - Planı sun, onay almadan asla implementasyona başlama.
+
+## 3) ÇIKTI FORMATI
+
+Her implementasyon ya da plan sonrası aşağıdaki çıktı formatına uymak zorundasın.
+
+- Dosya Dökümü vermek zorundasın.
+
+- Resmi bir dil kullanmak zorundasın, emoji kullanman yasak.
+
+- Her implementasyon sonrası eğer mümkünse "Happy-Path Test" ver.
+
+- Bu implementasyon ile alaklı varsa sık yapılan hatalar ve senin implementasyon sırasında aklına gelen önerilerini listelemek zorundasın.
+
