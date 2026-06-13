@@ -112,3 +112,23 @@
   `SearchRoute()` bağlanmıştır.
 
 - Sebep: Tasarım ekran görüntüsüne uyum; mevcut MVI mimarisi ve stub repository deseniyle tutarlılık.
+
+
+### Now Playing (Şimdi Çalıyor) Ekranı
+
+- Seçim: **MVI** — `NowPlayingContract.kt` (State + Intent + Effect), `NowPlayingViewModel.kt`,
+  `NowPlayingScreen.kt` (Route/Screen ayrımı), `NowPlayingRepository` interface +
+  `MockNowPlayingRepository`.
+
+- Son Güncelleme Tarihi: 13.06.2026
+
+- Uygulama: `ui/nowplaying/` paketi Login/Home referans implementasyonlarıyla aynı MVI desenini
+  izler. Ekran üst bar (chevron + "ŞİMDİ ÇALIYOR" + menü), büyük album kapağı (gradyan),
+  şarkı bilgisi + favori, ilerleme çubuğu (Slider), oynatma kontrolleri (shuffle, prev,
+  play/pause, next, repeat) ve alt araç çubuğu (kuyruk, arkaplan, şarkı sözleri) içerir.
+  Oynatma ilerlemesi bu iterasyonda coroutine tabanlı simülasyonla sağlanır; gerçek medya
+  oynatıcı (ExoPlayer/MediaSession) ayrı iterasyonda entegre edilecektir. `LyraIcons.kt`'ye
+  11 yeni ikon eklenmiştir. `LyraDestination.NowPlaying` üst düzey sekme değildir; alt gezinme
+  çubuğu bu ekranda gizlenir.
+
+- Sebep: Tasarım ekran görüntüsüne uyum; mevcut MVI + stub repository deseniyle tutarlılık.
