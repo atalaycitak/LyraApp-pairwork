@@ -1,4 +1,4 @@
-package com.turkcell.lyraapp.ui.library
+package com.turkcell.lyraapp.ui.favorites
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +24,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -39,29 +40,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.turkcell.lyraapp.data.library.LibraryFilter
-import com.turkcell.lyraapp.data.library.LibraryItem
-import com.turkcell.lyraapp.data.library.LibraryItemType
-import com.turkcell.lyraapp.data.library.LibraryQuickAction
-import com.turkcell.lyraapp.data.library.LibraryQuickActionType
+import com.turkcell.lyraapp.data.favorites.FavoriteFilter
+import com.turkcell.lyraapp.data.favorites.FavoriteItem
+import com.turkcell.lyraapp.data.favorites.FavoriteItemType
 import com.turkcell.lyraapp.ui.icons.LyraIcons
 import com.turkcell.lyraapp.ui.theme.LyraAppTheme
 
 /**
- * Kutuphane akisinin durumlu (stateful) giris noktasi.
+ * Favorites akisinin durumlu (stateful) giris noktasi.
  */
 @Composable
-fun LibraryRoute(
-    onNavigateToCreatePlaylist: () -> Unit = {},
+fun FavoritesRoute(
     modifier: Modifier = Modifier,
-    viewModel: LibraryViewModel = hiltViewModel(),
+    viewModel: FavoritesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -69,22 +66,21 @@ fun LibraryRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                LibraryEffect.NavigateToCreatePlaylist -> onNavigateToCreatePlaylist()
-                is LibraryEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
-                is LibraryEffect.ShowError -> {
+                is FavoritesEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
+                is FavoritesEffect.ShowError -> {
                     val result = snackbarHostState.showSnackbar(
                         message = effect.message,
                         actionLabel = "Tekrar dene",
                     )
                     if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.onIntent(LibraryIntent.Retry)
+                        viewModel.onIntent(FavoritesIntent.Retry)
                     }
                 }
             }
         }
     }
 
-    LibraryScreen(
+    FavoritesScreen(
         state = uiState,
         onIntent = viewModel::onIntent,
         snackbarHostState = snackbarHostState,
@@ -93,15 +89,15 @@ fun LibraryRoute(
 }
 
 /**
- * Kutuphane ekrani.
+ * Favoriler ekrani.
  *
  * Tamamen durumsuzdur: state'i parametre olarak alir, kullanici etkilesimlerini intent olarak
- * yukari yayar. Alt cubuk boslugu dis Scaffold'dan gelir; burada status bar boslugu yonetilir.
+ * yukari yayar.
  */
 @Composable
-fun LibraryScreen(
-    state: LibraryUiState,
-    onIntent: (LibraryIntent) -> Unit,
+fun FavoritesScreen(
+    state: FavoritesUiState,
+    onIntent: (FavoritesIntent) -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
@@ -123,30 +119,29 @@ fun LibraryScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .statusBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
                 contentPadding = PaddingValues(bottom = 20.dp),
             ) {
-                item { LibraryHeader() }
-                item {
-                    QuickActionsRow(
-                        actions = state.quickActions,
-                        onActionClick = { onIntent(LibraryIntent.QuickActionClicked(it)) },
-                    )
-                }
+                item { FavoritesHeader(count = state.items.size) }
                 item {
                     FilterChipsRow(
                         filters = state.filters,
                         selectedFilterId = state.selectedFilterId,
-                        onFilterSelected = { onIntent(LibraryIntent.FilterSelected(it)) },
+                        onFilterSelected = { onIntent(FavoritesIntent.FilterSelected(it)) },
                     )
                 }
-                item { LibrarySectionHeader(count = state.items.size) }
-                items(state.items, key = { it.id }) { item ->
-                    LibraryItemRow(
-                        item = item,
-                        onClick = { onIntent(LibraryIntent.ItemClicked(item.id)) },
-                    )
+                if (state.items.isEmpty()) {
+                    item { EmptyFavorites() }
+                } else {
+                    items(state.items, key = { it.id }) { item ->
+                        FavoriteItemRow(
+                            item = item,
+                            onClick = { onIntent(FavoritesIntent.ItemClicked(item.id)) },
+                            onFavoriteClick = { onIntent(FavoritesIntent.FavoriteClicked(item.id)) },
+                        )
+                    }
                 }
             }
         }
@@ -154,19 +149,43 @@ fun LibraryScreen(
 }
 
 @Composable
-private fun LibraryHeader() {
+private fun FavoritesHeader(count: Int) {
     Column(
         modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp),
     ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = LyraIcons.Favorite,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Favoriler",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "$count kayıtlı içerik",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
         Text(
-            text = "Kütüphane",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "Kaydettiğin müzikleri, listeleri ve çevrimdışı içerikleri yönet.",
+            text = "Beğenilen şarkı, albüm ve listelerini tek ekranda takip et.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -174,81 +193,8 @@ private fun LibraryHeader() {
 }
 
 @Composable
-private fun QuickActionsRow(
-    actions: List<LibraryQuickAction>,
-    onActionClick: (String) -> Unit,
-) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        items(actions, key = { it.id }) { action ->
-            QuickActionCard(
-                action = action,
-                onClick = { onActionClick(action.id) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun QuickActionCard(
-    action: LibraryQuickAction,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .width(220.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconBubble(icon = action.type.icon())
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = action.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = action.subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
-@Composable
-private fun IconBubble(icon: ImageVector) {
-    Box(
-        modifier = Modifier
-            .size(42.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.size(22.dp),
-        )
-    }
-}
-
-@Composable
 private fun FilterChipsRow(
-    filters: List<LibraryFilter>,
+    filters: List<FavoriteFilter>,
     selectedFilterId: String,
     onFilterSelected: (String) -> Unit,
 ) {
@@ -299,38 +245,16 @@ private fun FilterChipsRow(
 }
 
 @Composable
-private fun LibrarySectionHeader(count: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "Kayıtlı içerikler",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            text = "$count öğe",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun LibraryItemRow(
-    item: LibraryItem,
+private fun FavoriteItemRow(
+    item: FavoriteItem,
     onClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 2.dp),
+            .padding(start = 20.dp, end = 12.dp, top = 2.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Artwork(
@@ -352,27 +276,63 @@ private fun LibraryItemRow(
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = item.subtitle,
+                text = "${item.type.label()} - ${item.subtitle}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        Text(
+            text = item.durationLabel,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         if (item.isDownloaded) {
+            Spacer(Modifier.width(8.dp))
             Icon(
                 imageVector = LyraIcons.Check,
                 contentDescription = "İndirildi",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp),
             )
-            Spacer(Modifier.width(8.dp))
         }
+        IconButton(onClick = onFavoriteClick) {
+            Icon(
+                imageVector = LyraIcons.Favorite,
+                contentDescription = "Favorilerden kaldır",
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyFavorites() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 42.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Icon(
-            imageVector = LyraIcons.MoreVert,
-            contentDescription = "Daha fazla",
+            imageVector = LyraIcons.FavoriteOutlined,
+            contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(42.dp),
+        )
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = "Bu filtrede favori yok",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "Beğenilerini değiştirdikçe bu liste otomatik güncellenir.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -394,54 +354,40 @@ private fun Artwork(
     )
 }
 
-private fun LibraryQuickActionType.icon(): ImageVector =
+private fun FavoriteItemType.label(): String =
     when (this) {
-        LibraryQuickActionType.CreatePlaylist -> LyraIcons.QueueMusic
-        LibraryQuickActionType.Downloads -> LyraIcons.LibraryMusic
-        LibraryQuickActionType.LikedSongs -> LyraIcons.Favorite
+        FavoriteItemType.Song -> "Şarkı"
+        FavoriteItemType.Album -> "Albüm"
+        FavoriteItemType.Playlist -> "Liste"
     }
 
-private val previewState = LibraryUiState(
-    selectedFilterId = LibraryUiState.DEFAULT_FILTER_ID,
+private val previewState = FavoritesUiState(
+    selectedFilterId = FavoritesUiState.DEFAULT_FILTER_ID,
     filters = listOf(
-        LibraryFilter("filter-all", "Tümü", null),
-        LibraryFilter("filter-playlists", "Çalma listeleri", LibraryItemType.Playlist),
-        LibraryFilter("filter-albums", "Albümler", LibraryItemType.Album),
-        LibraryFilter("filter-artists", "Sanatçılar", LibraryItemType.Artist),
-    ),
-    quickActions = listOf(
-        LibraryQuickAction(
-            "action-create-playlist",
-            "Yeni çalma listesi",
-            "Kapak, ad ve şarkıları belirle",
-            LibraryQuickActionType.CreatePlaylist,
-        ),
-        LibraryQuickAction(
-            "action-downloads",
-            "İndirilenler",
-            "Çevrimdışı dinlemeye hazır",
-            LibraryQuickActionType.Downloads,
-        ),
+        FavoriteFilter("filter-all", "Tümü", null),
+        FavoriteFilter("filter-songs", "Şarkılar", FavoriteItemType.Song),
+        FavoriteFilter("filter-albums", "Albümler", FavoriteItemType.Album),
+        FavoriteFilter("filter-playlists", "Listeler", FavoriteItemType.Playlist),
     ),
     items = listOf(
-        LibraryItem("library-1", "Gece Sürüşü", "Çalma listesi - 42 şarkı", LibraryItemType.Playlist, 0xFF8B6FB8, 0xFF4A3D6B, true),
-        LibraryItem("library-2", "Derin Mavi", "Albüm - Okyanus", LibraryItemType.Album, 0xFF6FBF5A, 0xFF356B2A, true),
-        LibraryItem("library-3", "Polaris", "Sanatçı - 128 bin dinleyici", LibraryItemType.Artist, 0xFF3D5A80, 0xFF1B2A45, false),
+        FavoriteItem("favorite-1", "Gece Sürüşü", "Mira - Neon Hatıralar", FavoriteItemType.Song, 0xFF8B6FB8, 0xFF4A3D6B, "3:42", true),
+        FavoriteItem("favorite-2", "Derin Mavi", "Okyanus", FavoriteItemType.Album, 0xFF6FBF5A, 0xFF356B2A, "12 şarkı", true),
+        FavoriteItem("favorite-3", "Sabah Kahvesi", "Lyra Mix - 30 şarkı", FavoriteItemType.Playlist, 0xFF7C83D9, 0xFF3E4486, "1 sa 48 dk", false),
     ),
 )
 
-@Preview(name = "Library - Dark", showBackground = true, showSystemUi = true)
+@Preview(name = "Favorites - Dark", showBackground = true, showSystemUi = true)
 @Composable
-private fun LibraryScreenDarkPreview() {
+private fun FavoritesScreenDarkPreview() {
     LyraAppTheme(darkTheme = true) {
-        LibraryScreen(state = previewState, onIntent = {})
+        FavoritesScreen(state = previewState, onIntent = {})
     }
 }
 
-@Preview(name = "Library - Light", showBackground = true, showSystemUi = true)
+@Preview(name = "Favorites - Light", showBackground = true, showSystemUi = true)
 @Composable
-private fun LibraryScreenLightPreview() {
+private fun FavoritesScreenLightPreview() {
     LyraAppTheme(darkTheme = false) {
-        LibraryScreen(state = previewState, onIntent = {})
+        FavoritesScreen(state = previewState, onIntent = {})
     }
 }
