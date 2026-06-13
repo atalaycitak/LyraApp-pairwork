@@ -93,7 +93,7 @@ fun LyraAppTheme(
     val colorScheme = if (darkTheme) LyraDarkColors else LyraLightColors
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = LyraTypography,
+        typography = Typography,
         content = content,
     )
 }

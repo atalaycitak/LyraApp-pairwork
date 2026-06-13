@@ -1,42 +1,63 @@
 package com.turkcell.lyraapp.ui.auth.login
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Smartphone
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.turkcell.lyraapp.ui.icons.LyraIcons
 import com.turkcell.lyraapp.ui.theme.LyraAppTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 
+/**
+ * Login akışının durumlu (stateful) giriş noktası.
+ *
+ * [LoginViewModel]'i Hilt'ten alır, durumu yaşam döngüsüne duyarlı şekilde toplar ve
+ * tek seferlik [LoginEffect]'leri tüketir. UI ile iş mantığı arasındaki tek köprü burasıdır.
+ */
 @Composable
 fun LoginRoute(
+    onNavigateToHome: () -> Unit,
+    onNavigateToRegister: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
-    onNavigateToHome: () -> Unit = {},
-    onNavigateToRegister: () -> Unit = {},
-    onNavigateToForgotPassword: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -44,236 +65,263 @@ fun LoginRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is LoginEffect.NavigateToHome -> onNavigateToHome()
-                is LoginEffect.NavigateToRegister -> onNavigateToRegister()
-                is LoginEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
                 is LoginEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+                LoginEffect.NavigateToHome -> onNavigateToHome()
+                LoginEffect.NavigateToRegister -> onNavigateToRegister()
             }
         }
     }
 
     LoginScreen(
-        uiState = uiState,
+        state = uiState,
         onIntent = viewModel::onIntent,
         snackbarHostState = snackbarHostState,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
+/**
+ * Login ("Tekrar hoş geldin") ekranı.
+ *
+ * Tamamen durumsuzdur (stateless): durumu [state] üzerinden alır, kullanıcı etkileşimlerini
+ * [onIntent] ile yukarı yayımlar. İş mantığı veya state sahipliği bu katmanda bulunmaz.
+ */
 @Composable
 fun LoginScreen(
-    uiState: LoginUiState,
+    state: LoginUiState,
     onIntent: (LoginIntent) -> Unit,
-    snackbarHostState: SnackbarHostState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .systemBarsPadding()
+                .imePadding()
                 .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(0.22f))
 
-            // Logo Box
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.tertiaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.GraphicEq,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+            BrandLogo()
+            Spacer(Modifier.height(24.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
+            HeaderTexts()
+            Spacer(Modifier.height(28.dp))
 
-            // Hoşgeldin Başlığı
-            Text(
-                text = "Tekrar hoş geldin",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Alt Başlık
-            Text(
-                text = "Hesabına giriş yap, kaldığın yerden\ndinlemeye devam et.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Telefon Numarası Alanı
-            OutlinedTextField(
-                value = uiState.phoneNumber,
+            PhoneNumberField(
+                value = state.phoneNumber,
                 onValueChange = { onIntent(LoginIntent.PhoneNumberChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Telefon numarası") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Smartphone,
-                        contentDescription = "Telefon"
-                    )
-                },
-                prefix = {
-                    Text(
-                        text = "+90 ",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                placeholder = { Text("5XX XXX XX XX") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp)
             )
+            Spacer(Modifier.height(14.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Şifre Alanı
-            OutlinedTextField(
-                value = uiState.password,
+            PasswordField(
+                value = state.password,
+                isPasswordVisible = state.isPasswordVisible,
                 onValueChange = { onIntent(LoginIntent.PasswordChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Şifre") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Lock,
-                        contentDescription = "Şifre"
-                    )
-                },
-                trailingIcon = {
-                    IconButton(onClick = { onIntent(LoginIntent.TogglePasswordVisibility) }) {
-                        Icon(
-                            imageVector = if (uiState.isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (uiState.isPasswordVisible) "Şifreyi Gizle" else "Şifreyi Göster"
-                        )
-                    }
-                },
-                visualTransformation = if (uiState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp)
+                onToggleVisibility = { onIntent(LoginIntent.TogglePasswordVisibility) },
+            )
+            Spacer(Modifier.height(10.dp))
+
+            Text(
+                text = "Şifremi unuttum",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.End),
+            )
+            Spacer(Modifier.height(28.dp))
+
+            LoginButton(
+                enabled = state.isLoginEnabled,
+                isLoading = state.isLoading,
+                onClick = { onIntent(LoginIntent.Submit) },
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(Modifier.weight(0.30f))
 
-            // Şifremi Unuttum Butonu
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                TextButton(onClick = { onIntent(LoginIntent.ForgotPasswordClicked) }) {
-                    Text(
-                        text = "Şifremi unuttum",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Giriş Yap Butonu
-            Button(
-                onClick = { onIntent(LoginIntent.Submit) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(28.dp),
-                enabled = uiState.isLoginEnabled && !uiState.isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Giriş yap",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Kayıt Ol Alanı
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Hesabın yok mu?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                TextButton(
-                    onClick = { onIntent(LoginIntent.RegisterClicked) },
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Text(
-                        text = "Kayıt ol",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            RegisterPrompt(
+                onRegisterClick = { onIntent(LoginIntent.RegisterClicked) },
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
-fun LoginScreenDarkPreview() {
-    LyraAppTheme {
-        LoginScreen(
-            uiState = LoginUiState(),
-            onIntent = {},
-            snackbarHostState = remember { SnackbarHostState() }
+private fun BrandLogo() {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = LyraIcons.Waveform,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.size(28.dp),
         )
     }
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO, name = "Light Mode")
 @Composable
-fun LoginScreenLightPreview() {
-    LyraAppTheme {
+private fun HeaderTexts() {
+    Text(
+        text = "Tekrar hoş geldin",
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+    Spacer(Modifier.height(8.dp))
+    Text(
+        text = "Hesabına giriş yap, kaldığın yerden dinlemeye devam et.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.secondary,
+    )
+}
+
+@Composable
+private fun PhoneNumberField(
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        label = { Text("Telefon numarası") },
+        prefix = { Text("+90") },
+        placeholder = { Text("5XX XXX XX XX") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+        leadingIcon = {
+            Icon(
+                imageVector = LyraIcons.Smartphone,
+                contentDescription = null,
+            )
+        },
+    )
+}
+
+@Composable
+private fun PasswordField(
+    value: String,
+    isPasswordVisible: Boolean,
+    onValueChange: (String) -> Unit,
+    onToggleVisibility: () -> Unit,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        placeholder = { Text("Şifre") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        visualTransformation =
+            if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        leadingIcon = {
+            Icon(
+                imageVector = LyraIcons.Lock,
+                contentDescription = null,
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = onToggleVisibility) {
+                Icon(
+                    imageVector = LyraIcons.Visibility,
+                    contentDescription = if (isPasswordVisible) "Şifreyi gizle" else "Şifreyi göster",
+                )
+            }
+        },
+    )
+}
+
+@Composable
+private fun LoginButton(
+    enabled: Boolean,
+    isLoading: Boolean,
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled && !isLoading,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(28.dp),
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = Color.White,
+            )
+        } else {
+            Text(
+                text = "Giriş yap",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = LyraIcons.ArrowForward,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun RegisterPrompt(
+    onRegisterClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "Hesabın yok mu?",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = "Kayıt ol",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.clickable(onClick = onRegisterClick),
+        )
+    }
+}
+
+@Preview(name = "Login - Light", showBackground = true, showSystemUi = true)
+@Composable
+private fun LoginScreenLightPreview() {
+    LyraAppTheme(darkTheme = false) {
+        LoginScreen(state = LoginUiState(), onIntent = {})
+    }
+}
+
+@Preview(name = "Login - Dark", showBackground = true, showSystemUi = true)
+@Composable
+private fun LoginScreenDarkPreview() {
+    LyraAppTheme(darkTheme = true) {
         LoginScreen(
-            uiState = LoginUiState(),
+            state = LoginUiState(phoneNumber = "555 123 45 67", password = "secret", isLoginEnabled = true),
             onIntent = {},
-            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
