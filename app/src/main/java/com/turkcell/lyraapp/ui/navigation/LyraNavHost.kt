@@ -22,6 +22,7 @@ import com.turkcell.lyraapp.ui.home.HomeRoute
 import com.turkcell.lyraapp.ui.library.LibraryRoute
 import com.turkcell.lyraapp.ui.nowplaying.NowPlayingRoute
 import com.turkcell.lyraapp.ui.search.SearchRoute
+import com.turkcell.lyraapp.ui.playlist.create.CreatePlaylistRoute
 
 /**
  * Uygulamanın iskelet navigasyon yapısı.
@@ -90,11 +91,24 @@ fun LyraNavHost(
 
             composable(LyraDestination.Home.route) { HomeRoute() }
             composable(LyraDestination.Search.route) { SearchRoute() }
-            composable(LyraDestination.Library.route) { LibraryRoute() }
+            composable(LyraDestination.Library.route) {
+                LibraryRoute(
+                    onNavigateToCreatePlaylist = {
+                        navController.navigate(LyraDestination.CreatePlaylist.route) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
             composable(LyraDestination.Favorites.route) { PlaceholderScreen(title = "Favoriler") }
             composable(LyraDestination.Profile.route) { PlaceholderScreen(title = "Profil") }
             composable(LyraDestination.NowPlaying.route) {
                 NowPlayingRoute(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
+            composable(LyraDestination.CreatePlaylist.route) {
+                CreatePlaylistRoute(
                     onNavigateBack = { navController.popBackStack() },
                 )
             }

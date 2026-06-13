@@ -59,6 +59,7 @@ import com.turkcell.lyraapp.ui.theme.LyraAppTheme
  */
 @Composable
 fun LibraryRoute(
+    onNavigateToCreatePlaylist: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
@@ -68,6 +69,7 @@ fun LibraryRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
+                LibraryEffect.NavigateToCreatePlaylist -> onNavigateToCreatePlaylist()
                 is LibraryEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
                 is LibraryEffect.ShowError -> {
                     val result = snackbarHostState.showSnackbar(
