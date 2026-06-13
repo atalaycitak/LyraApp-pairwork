@@ -95,3 +95,20 @@
 
 - Sebep: Backend REST API sözleşmesi tanımlı değil (`agents.md` §2.2 uydurmak yasak). Gerçek API
   geldiğinde yalnızca implementasyon ve DI bağlaması değişir; ViewModel/Contract etkilenmez.
+
+
+### Arama (Search) Ekranı
+
+- Seçim: **MVI** — `SearchContract.kt` (State + Intent + Effect), `SearchViewModel.kt`,
+  `SearchScreen.kt` (Route/Screen ayrımı), `SearchRepository` interface + `MockSearchRepository`.
+
+- Son Güncelleme Tarihi: 13.06.2026
+
+- Uygulama: `ui/search/` paketi Login/Home referans implementasyonlarıyla aynı MVI desenini izler.
+  Arama alanı (`OutlinedTextField`), yatay scrollable filtre çipleri (`FilterChip`) ve 2 sütunlu
+  tür kartları grid'i (`Genre` modeli, gradyan arka plan) ekran görüntüsüne birebir uygun
+  olarak tasarlanmıştır. Veri katmanı `data/search/` altında, DI bağlaması `di/SearchModule.kt`
+  içinde yer alır. Navigasyonda `LyraNavHost` içindeki geçici `PlaceholderScreen` kaldırılarak
+  `SearchRoute()` bağlanmıştır.
+
+- Sebep: Tasarım ekran görüntüsüne uyum; mevcut MVI mimarisi ve stub repository deseniyle tutarlılık.

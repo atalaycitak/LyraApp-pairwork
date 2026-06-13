@@ -180,6 +180,14 @@ object LyraIcons {
                 "-8,4v3h16v-3c0,-2.66 -5.33,-4 -8,-4z",
         )
     }
+
+    /** Filtre çiplerinde seçili durumu gösteren onay ikonu (Material Check). */
+    val Check: ImageVector by lazy {
+        lyraIcon(
+            name = "Check",
+            pathData = "M9,16.17L4.83,12l-1.42,1.41L9,19 21,7l-1.41,-1.41z",
+        )
+    }
 }
 
 /**
