@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.turkcell.lyraapp.ui.auth.login.LoginRoute
 import com.turkcell.lyraapp.ui.auth.register.RegisterRoute
 import com.turkcell.lyraapp.ui.home.HomeRoute
+import com.turkcell.lyraapp.ui.library.LibraryRoute
 import com.turkcell.lyraapp.ui.nowplaying.NowPlayingRoute
 import com.turkcell.lyraapp.ui.search.SearchRoute
 
@@ -89,7 +90,7 @@ fun LyraNavHost(
 
             composable(LyraDestination.Home.route) { HomeRoute() }
             composable(LyraDestination.Search.route) { SearchRoute() }
-            composable(LyraDestination.Library.route) { PlaceholderScreen(title = "Kütüphane") }
+            composable(LyraDestination.Library.route) { LibraryRoute() }
             composable(LyraDestination.Favorites.route) { PlaceholderScreen(title = "Favoriler") }
             composable(LyraDestination.Profile.route) { PlaceholderScreen(title = "Profil") }
             composable(LyraDestination.NowPlaying.route) {

@@ -132,3 +132,21 @@
   çubuğu bu ekranda gizlenir.
 
 - Sebep: Tasarım ekran görüntüsüne uyum; mevcut MVI + stub repository deseniyle tutarlılık.
+
+
+### Kütüphane (Library) Ekranı
+
+- Seçim: **MVI** — `LibraryContract.kt` (State + Intent + Effect), `LibraryViewModel.kt`,
+  `LibraryScreen.kt` (Route/Screen ayrımı), `LibraryRepository` interface +
+  `MockLibraryRepository`.
+
+- Son Güncelleme Tarihi: 13.06.2026
+
+- Uygulama: `ui/library/` paketi mevcut Login/Home/Search referans implementasyonlarıyla aynı
+  MVI desenini izler. Ekran başlık, hızlı kütüphane aksiyonları, filtre çipleri ve kayıtlı
+  içerik listesinden oluşur. Veri katmanı `data/library/` altında, DI bağlaması
+  `di/LibraryModule.kt` içinde yer alır. Navigasyonda `LyraNavHost` içindeki geçici
+  `PlaceholderScreen` kaldırılarak `LibraryRoute()` bağlanmıştır.
+
+- Sebep: Mevcut alt gezinme çubuğundaki Library sekmesini gerçek MVI ekranına bağlamak;
+  backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
