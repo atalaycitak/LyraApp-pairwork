@@ -264,3 +264,4 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 - Her feature için önce dosya dökümü ve bağımlılık matrisi sunulmalıdır.
 - Backend sözleşmesi gelmeden API detayı uydurulmamalıdır.
 - Yeni ekranlar MVI kurallarına ve Login referansına uygun yazılmalıdır.
+- Kullanıcıya görünen uygulama içi metinlerde Türkçe karakterler korunmalıdır.
