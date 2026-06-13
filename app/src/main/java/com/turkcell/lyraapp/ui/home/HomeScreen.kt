@@ -120,8 +120,7 @@ fun HomeScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .statusBarsPadding(),
+                    .padding(innerPadding),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 item { HomeHeader(greeting = state.greeting, userInitials = state.userInitials) }
