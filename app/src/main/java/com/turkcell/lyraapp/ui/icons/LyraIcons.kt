@@ -285,6 +285,48 @@ object LyraIcons {
             pathData = "M14,17H4v2h10v-2zM20,9H4v2h16V9zM4,15h16v-2H4v2zM4,5v2h16V5H4z",
         )
     }
+
+    // ── Create Playlist ekranı ikonları ──
+
+    /** Kapat ikonu (Material Close). */
+    val Close: ImageVector by lazy {
+        lyraIcon(
+            name = "Close",
+            pathData = "M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z",
+        )
+    }
+
+    /** Düzenle / Kalem ikonu (Material Edit). */
+    val Edit: ImageVector by lazy {
+        lyraIcon(
+            name = "Edit",
+            pathData = "M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z",
+        )
+    }
+
+    /** Herkese açık / Dünya ikonu (Material Public). */
+    val Public: ImageVector by lazy {
+        lyraIcon(
+            name = "Public",
+            pathData = "M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM11,19.93c-3.95,-0.49 -7,-3.85 -7,-7.93 0,-0.62 0.08,-1.22 0.21,-1.79L9,15v1c0,1.1 0.9,2 2,2v1.93zM17.9,17.39c-0.26,-0.81 -1,-1.39 -1.9,-1.39h-1v-3c0,-0.55 -0.45,-1 -1,-1H8v-2h2c0.55,0 1,-0.45 1,-1V7h2c1.1,0 2,-0.9 2,-2v-0.41c2.93,1.19 5,4.06 5,7.41 0,2.08 -0.8,3.97 -2.1,5.39z",
+        )
+    }
+
+    /** Seçilmemiş yuvarlak radyo butonu (Material RadioButtonUnchecked). */
+    val RadioButtonUnchecked: ImageVector by lazy {
+        lyraIcon(
+            name = "RadioButtonUnchecked",
+            pathData = "M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.42,0 -8,-3.58 -8,-8s3.58,-8 8,-8 8,3.58 8,8 -3.58,8 -8,8z",
+        )
+    }
+
+    /** Onaylanmış / Seçili dolu tik yuvarlak (Material CheckCircle). */
+    val CheckCircle: ImageVector by lazy {
+        lyraIcon(
+            name = "CheckCircle",
+            pathData = "M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM10,17l-5,-5 1.41,-1.41L10,14.17l7.59,-7.59L19,8l-9,9z",
+        )
+    }
 }
 
 /**

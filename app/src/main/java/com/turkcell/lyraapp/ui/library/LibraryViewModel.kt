@@ -92,9 +92,13 @@ class LibraryViewModel @Inject constructor(
     }
 
     private fun sendMessageForAction(actionId: String) {
-        val title = _uiState.value.quickActions.firstOrNull { it.id == actionId }?.title ?: return
+        val action = _uiState.value.quickActions.firstOrNull { it.id == actionId } ?: return
         viewModelScope.launch {
-            _effect.send(LibraryEffect.ShowMessage("$title ozelligi yakinda eklenecek."))
+            if (action.type == com.turkcell.lyraapp.data.library.LibraryQuickActionType.CreatePlaylist) {
+                _effect.send(LibraryEffect.NavigateToCreatePlaylist)
+            } else {
+                _effect.send(LibraryEffect.ShowMessage("${action.title} ozelligi yakinda eklenecek."))
+            }
         }
     }
 

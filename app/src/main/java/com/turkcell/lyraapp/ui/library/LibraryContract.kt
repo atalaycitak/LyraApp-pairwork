@@ -27,6 +27,7 @@ sealed interface LibraryIntent {
 }
 
 sealed interface LibraryEffect {
+    data object NavigateToCreatePlaylist : LibraryEffect
     data class ShowMessage(val message: String) : LibraryEffect
     data class ShowError(val message: String) : LibraryEffect
 }
