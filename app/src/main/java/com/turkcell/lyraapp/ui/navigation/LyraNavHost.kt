@@ -12,10 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.turkcell.lyraapp.ui.auth.login.LoginRoute
 import com.turkcell.lyraapp.ui.auth.register.RegisterRoute
 import com.turkcell.lyraapp.ui.home.HomeRoute
@@ -89,7 +91,15 @@ fun LyraNavHost(
                 )
             }
 
-            composable(LyraDestination.Home.route) { HomeRoute() }
+            composable(LyraDestination.Home.route) {
+                HomeRoute(
+                    onNavigateToNowPlaying = { songId ->
+                        navController.navigate(LyraDestination.nowPlayingRoute(songId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
             composable(LyraDestination.Search.route) { SearchRoute() }
             composable(LyraDestination.Library.route) {
                 LibraryRoute(
@@ -102,7 +112,12 @@ fun LyraNavHost(
             }
             composable(LyraDestination.Favorites.route) { PlaceholderScreen(title = "Favoriler") }
             composable(LyraDestination.Profile.route) { PlaceholderScreen(title = "Profil") }
-            composable(LyraDestination.NowPlaying.route) {
+            composable(
+                route = LyraDestination.NowPlaying.route,
+                arguments = listOf(
+                    navArgument("songId") { type = NavType.StringType }
+                ),
+            ) {
                 NowPlayingRoute(
                     onNavigateBack = { navController.popBackStack() },
                 )

@@ -1,7 +1,7 @@
 package com.turkcell.lyraapp.di
 
 import com.turkcell.lyraapp.data.home.HomeRepository
-import com.turkcell.lyraapp.data.home.MockHomeRepository
+import com.turkcell.lyraapp.data.home.RetrofitHomeRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -11,8 +11,8 @@ import javax.inject.Singleton
 /**
  * Home feature'ının repository bağlamaları.
  *
- * Backend hazır olmadığından [HomeRepository], MOCK implementasyona ([MockHomeRepository])
- * bağlanır. Gerçek API geldiğinde yalnızca bu bağlamanın hedefi değiştirilir.
+ * [HomeRepository] artık [RetrofitHomeRepository]'ye bağlıdır; gerçek API verisi kullanılır.
+ * Mock implementasyon ([MockHomeRepository]) ağ bağımsız test senaryoları için korunmaktadır.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -20,5 +20,6 @@ abstract class HomeModule {
 
     @Binds
     @Singleton
-    abstract fun bindHomeRepository(impl: MockHomeRepository): HomeRepository
+    abstract fun bindHomeRepository(impl: RetrofitHomeRepository): HomeRepository
 }
+
