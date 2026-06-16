@@ -197,3 +197,34 @@
 
 - Sebep: API stream URL'i artık mevcut; ExoPlayer HTTP Range desteğiyle imzalı URL'den
   doğrudan ses akışı sağlar (openapi.json /api/v1/stream/{songId} tasarımıyla uyumlu).
+
+### Favoriler (Favorites) Ekranı
+
+- Seçim: **MVI** - `FavoritesContract.kt` (State + Intent + Effect), `FavoritesViewModel.kt`,
+  `FavoritesScreen.kt` (Route/Screen ayrımı), `FavoritesRepository` interface +
+  `MockFavoritesRepository`.
+
+- Son Güncelleme Tarihi: 13.06.2026
+
+- Uygulama: `ui/favorites/` paketi mevcut Login/Home/Search/Library referans
+  implementasyonlarıyla aynı MVI desenini izler. Ekran başlık, favori sayısı, filtre çipleri,
+  favori içerik listesi, favoriden kaldırma aksiyonu ve boş liste durumundan oluşur. Veri katmanı
+  `data/favorites/` altında, DI bağlaması `di/FavoritesModule.kt` içinde yer alır. Navigasyonda
+  `LyraNavHost` içindeki Favorites placeholder'ı kaldırılarak `FavoritesRoute()` bağlanmıştır.
+
+- Sebep: Mevcut alt gezinme çubuğundaki Favorites sekmesini gerçek MVI ekranına bağlamak;
+  backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
+
+
+### Kullanıcı Arayüzü Metin Dili
+
+- Seçim: Uygulama içi kullanıcıya görünen metinler Türkçe yazılır ve Türkçe karakterler
+  (`ç`, `ğ`, `ı`, `İ`, `ö`, `ş`, `ü`) korunur.
+
+- Son Güncelleme Tarihi: 13.06.2026
+
+- Kapsam: Compose ekran metinleri, snackbar/hata mesajları, erişilebilirlik açıklamaları,
+  preview/mock veri başlıkları ve takım dokümantasyonu.
+
+- Sebep: Uygulamanın hedef kullanıcı kitlesi Türk kullanıcılar olduğu için arayüz dilinin doğal,
+  tutarlı ve okunabilir olması gerekir.

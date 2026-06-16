@@ -67,7 +67,7 @@ class LibraryViewModel @Inject constructor(
                     }
                 }
                 .onFailure { error ->
-                    _effect.send(LibraryEffect.ShowError(error.message ?: "Kutuphane yuklenemedi."))
+                    _effect.send(LibraryEffect.ShowError(error.message ?: "Kütüphane yüklenemedi."))
                 }
         }
     }
@@ -97,7 +97,7 @@ class LibraryViewModel @Inject constructor(
             if (action.type == com.turkcell.lyraapp.data.library.LibraryQuickActionType.CreatePlaylist) {
                 _effect.send(LibraryEffect.NavigateToCreatePlaylist)
             } else {
-                _effect.send(LibraryEffect.ShowMessage("${action.title} ozelligi yakinda eklenecek."))
+                _effect.send(LibraryEffect.ShowMessage("${action.title} özelliği yakında eklenecek."))
             }
         }
     }
@@ -105,7 +105,7 @@ class LibraryViewModel @Inject constructor(
     private fun sendMessageForItem(itemId: String) {
         val title = allItems.firstOrNull { it.id == itemId }?.title ?: return
         viewModelScope.launch {
-            _effect.send(LibraryEffect.ShowMessage("$title aciliyor."))
+            _effect.send(LibraryEffect.ShowMessage("$title açılıyor."))
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.turkcell.lyraapp.ui.auth.login.LoginRoute
 import com.turkcell.lyraapp.ui.auth.register.RegisterRoute
+import com.turkcell.lyraapp.ui.favorites.FavoritesRoute
 import com.turkcell.lyraapp.ui.home.HomeRoute
 import com.turkcell.lyraapp.ui.library.LibraryRoute
 import com.turkcell.lyraapp.ui.nowplaying.NowPlayingRoute
@@ -110,7 +111,7 @@ fun LyraNavHost(
                     }
                 )
             }
-            composable(LyraDestination.Favorites.route) { PlaceholderScreen(title = "Favoriler") }
+            composable(LyraDestination.Favorites.route) { FavoritesRoute() }
             composable(LyraDestination.Profile.route) { PlaceholderScreen(title = "Profil") }
             composable(
                 route = LyraDestination.NowPlaying.route,

@@ -26,29 +26,29 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
         const val NETWORK_DELAY_MS = 700L
 
         val FILTERS = listOf(
-            LibraryFilter("filter-all", "Tumu", null),
-            LibraryFilter("filter-playlists", "Calma listeleri", LibraryItemType.Playlist),
-            LibraryFilter("filter-albums", "Albumler", LibraryItemType.Album),
-            LibraryFilter("filter-artists", "Sanatcilar", LibraryItemType.Artist),
+            LibraryFilter("filter-all", "Tümü", null),
+            LibraryFilter("filter-playlists", "Çalma listeleri", LibraryItemType.Playlist),
+            LibraryFilter("filter-albums", "Albümler", LibraryItemType.Album),
+            LibraryFilter("filter-artists", "Sanatçılar", LibraryItemType.Artist),
         )
 
         val QUICK_ACTIONS = listOf(
             LibraryQuickAction(
                 id = "action-create-playlist",
-                title = "Yeni calma listesi",
-                subtitle = "Kapak, ad ve sarkilari belirle",
+                title = "Yeni çalma listesi",
+                subtitle = "Kapak, ad ve şarkıları belirle",
                 type = LibraryQuickActionType.CreatePlaylist,
             ),
             LibraryQuickAction(
                 id = "action-downloads",
-                title = "Indirilenler",
-                subtitle = "Cevrimdisi dinlemeye hazir",
+                title = "İndirilenler",
+                subtitle = "Çevrimdışı dinlemeye hazır",
                 type = LibraryQuickActionType.Downloads,
             ),
             LibraryQuickAction(
                 id = "action-liked",
-                title = "Begenilen sarkilar",
-                subtitle = "Favori parcali koleksiyon",
+                title = "Beğenilen şarkılar",
+                subtitle = "Favori parçalı koleksiyon",
                 type = LibraryQuickActionType.LikedSongs,
             ),
         )
@@ -56,8 +56,8 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
         val ITEMS = listOf(
             LibraryItem(
                 id = "library-1",
-                title = "Gece Surusu",
-                subtitle = "Calma listesi - 42 sarki",
+                title = "Gece Sürüşü",
+                subtitle = "Çalma listesi - 42 şarkı",
                 type = LibraryItemType.Playlist,
                 artworkStartColor = 0xFF8B6FB8,
                 artworkEndColor = 0xFF4A3D6B,
@@ -65,8 +65,8 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
             ),
             LibraryItem(
                 id = "library-2",
-                title = "Haftalik Kesif",
-                subtitle = "Calma listesi - Lyra",
+                title = "Haftalık Keşif",
+                subtitle = "Çalma listesi - Lyra",
                 type = LibraryItemType.Playlist,
                 artworkStartColor = 0xFF9B7FC4,
                 artworkEndColor = 0xFF5A4480,
@@ -75,7 +75,7 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
             LibraryItem(
                 id = "library-3",
                 title = "Derin Mavi",
-                subtitle = "Album - Okyanus",
+                subtitle = "Albüm - Okyanus",
                 type = LibraryItemType.Album,
                 artworkStartColor = 0xFF6FBF5A,
                 artworkEndColor = 0xFF356B2A,
@@ -84,7 +84,7 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
             LibraryItem(
                 id = "library-4",
                 title = "Neon Sokaklar",
-                subtitle = "Album - Sehir Isiklari",
+                subtitle = "Albüm - Şehir Işıkları",
                 type = LibraryItemType.Album,
                 artworkStartColor = 0xFFD98E4A,
                 artworkEndColor = 0xFF8A5526,
@@ -93,7 +93,7 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
             LibraryItem(
                 id = "library-5",
                 title = "Polaris",
-                subtitle = "Sanatci - 128 bin dinleyici",
+                subtitle = "Sanatçı - 128 bin dinleyici",
                 type = LibraryItemType.Artist,
                 artworkStartColor = 0xFF3D5A80,
                 artworkEndColor = 0xFF1B2A45,
@@ -102,7 +102,7 @@ class MockLibraryRepository @Inject constructor() : LibraryRepository {
             LibraryItem(
                 id = "library-6",
                 title = "Sabah Kahvesi",
-                subtitle = "Calma listesi - 30 sarki",
+                subtitle = "Çalma listesi - 30 şarkı",
                 type = LibraryItemType.Playlist,
                 artworkStartColor = 0xFF7C83D9,
                 artworkEndColor = 0xFF3E4486,
