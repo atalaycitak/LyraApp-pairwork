@@ -152,6 +152,52 @@
   backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
 
 
+### Songs REST API Entegrasyonu (Retrofit)
+
+- Seçim: **Retrofit 2.11.0** + **OkHttp logging-interceptor 4.12.0** + **Gson Converter**
+
+- Son Güncelleme Tarihi: 16.06.2026
+
+- Bağımlılık: `com.squareup.retrofit2:retrofit` + `converter-gson` **2.11.0**;
+  `com.squareup.okhttp3:logging-interceptor` **4.12.0** (version catalog: `retrofit`, `okhttpLogging`).
+
+- Uygulama: `di/NetworkModule.kt` Retrofit singleton + `SongApiService` sağlar. Base URL canlı
+  ortam sunucusudur (`https://streaming-api.halitkalayci.com/`). `data/song/` paketine
+  `SongModels.kt`, `SongApiService.kt`, `SongRepository.kt`, `RetrofitSongRepository.kt` eklendi;
+  `di/SongModule.kt` bağlamayı yapar. `data/home/RetrofitHomeRepository.kt`, `SongRepository`
+  üzerinden şarkı listesini çekip `HomeFeed`'e dönüştürür; `di/HomeModule.kt`'de bağlama hedefi
+  `MockHomeRepository` → `RetrofitHomeRepository` olarak değiştirildi.
+
+- Kapak Rengi Stratejisi: API'da `background`/kapak görseli alanı bulunmadığından her şarkı
+  için `abs(id.hashCode()) % paletteSize` formülüyle deterministik renk çifti üretilir.
+  Aynı ID her zaman aynı rengi verir; Home ve NowPlaying ekranları aynı paleti kullanır.
+
+- Sebep: Backend API sözleşmesi yayınlandı; stub repository deseni gerçek implementasyonla
+  değiştirildi. ViewModel ve Contract değişmedi (mvi-overview.md §6 prensibiyle uyumlu).
+
+
+### ExoPlayer Ses Akışı
+
+- Seçim: **androidx.media3:media3-exoplayer 1.6.1**
+
+- Son Güncelleme Tarihi: 16.06.2026
+
+- Bağımlılık: `androidx.media3:media3-exoplayer` **1.6.1** (version catalog: `media3`).
+
+- Uygulama: `NowPlayingViewModel` artık `SavedStateHandle` üzerinden `songId` alır.
+  Yükleme adımları: (1) `SongRepository.getSongById(songId)` → metadata, (2)
+  `SongRepository.getStreamUrl(songId)` → 300 saniyelik imzalı URL → `ExoPlayer.setMediaItem()`.
+  ExoPlayer, `NowPlayingModule`'de `@ApplicationContext` ile `@Provides @Singleton` olarak
+  sağlanır; ViewModel doğrudan `Context` tutmaz (mvi-viewmodel-rules.md §3.6 uyumlu).
+  `NowPlayingDestination` rotası `"now_playing/{songId}"` path parametresine güncellendi;
+  `LyraDestination.nowPlayingRoute(songId)` yardımcı fonksiyonu eklendi.
+
+- Kapsam: Bu iterasyonda progress bar simülasyonu kaldırıldı; ExoPlayer'ın gerçek pozisyon
+  takibi (Player.Listener) bir sonraki iterasyona bırakıldı.
+
+- Sebep: API stream URL'i artık mevcut; ExoPlayer HTTP Range desteğiyle imzalı URL'den
+  doğrudan ses akışı sağlar (openapi.json /api/v1/stream/{songId} tasarımıyla uyumlu).
+
 ### Favoriler (Favorites) Ekranı
 
 - Seçim: **MVI** - `FavoritesContract.kt` (State + Intent + Effect), `FavoritesViewModel.kt`,

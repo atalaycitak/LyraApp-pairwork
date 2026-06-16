@@ -22,8 +22,15 @@ data class HomeUiState(
 sealed interface HomeIntent {
     /** Besleme yüklemesi başarısız olduğunda kullanıcı yeniden dener. */
     data object Retry : HomeIntent
+
+    /** Kullanıcı bir şarkı kartına (QuickPick veya RecentlyPlayed) tıkladı. */
+    data class SongClicked(val songId: String) : HomeIntent
 }
 
 sealed interface HomeEffect {
     data class ShowError(val message: String) : HomeEffect
+
+    /** NowPlaying ekranına geçiş tetiklenir; [songId] navArgument olarak iletilir. */
+    data class NavigateToNowPlaying(val songId: String) : HomeEffect
 }
+
