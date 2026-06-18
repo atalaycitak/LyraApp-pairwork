@@ -105,10 +105,13 @@ class LibraryViewModel @Inject constructor(
     private fun sendMessageForItem(itemId: String) {
         val item = allItems.firstOrNull { it.id == itemId } ?: return
         viewModelScope.launch {
-            if (item.type == com.turkcell.lyraapp.data.library.LibraryItemType.Playlist) {
-                _effect.send(LibraryEffect.NavigateToPlaylistDetail(itemId))
-            } else {
-                _effect.send(LibraryEffect.ShowMessage("${item.title} açılıyor."))
+            when (item.type) {
+                com.turkcell.lyraapp.data.library.LibraryItemType.Playlist -> {
+                    _effect.send(LibraryEffect.NavigateToPlaylistDetail(itemId))
+                }
+                else -> {
+                    _effect.send(LibraryEffect.ShowMessage("${item.title} açılıyor."))
+                }
             }
         }
     }

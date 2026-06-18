@@ -57,6 +57,8 @@ import com.turkcell.lyraapp.ui.theme.LyraAppTheme
  */
 @Composable
 fun FavoritesRoute(
+    onNavigateToPlayer: (songId: String) -> Unit = {},
+    onNavigateToPlaylistDetail: (playlistId: String) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: FavoritesViewModel = hiltViewModel(),
 ) {
@@ -66,6 +68,8 @@ fun FavoritesRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
+                is FavoritesEffect.NavigateToPlayer -> onNavigateToPlayer(effect.songId)
+                is FavoritesEffect.NavigateToPlaylistDetail -> onNavigateToPlaylistDetail(effect.playlistId)
                 is FavoritesEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
                 is FavoritesEffect.ShowError -> {
                     val result = snackbarHostState.showSnackbar(
