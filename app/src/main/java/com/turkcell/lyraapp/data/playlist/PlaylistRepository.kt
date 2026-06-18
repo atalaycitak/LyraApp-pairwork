@@ -21,4 +21,9 @@ interface PlaylistRepository {
         isPublic: Boolean,
         songIds: List<String>
     ): Result<Unit>
+
+    /**
+     * Verilen ID'ye sahip çalma listesinin detaylarını döndürür.
+     */
+    suspend fun getPlaylistDetail(playlistId: String): Result<PlaylistDetailModel>
 }

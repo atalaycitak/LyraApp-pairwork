@@ -18,11 +18,15 @@ enum class LyraDestination(val route: String) {
     Favorites("favorites"),
     Profile("profile"),
     NowPlaying("now_playing/{songId}"),
-    CreatePlaylist("create_playlist");
+    CreatePlaylist("create_playlist"),
+    PlaylistDetail("playlist_detail/{playlistId}");
 
     companion object {
         /** NowPlaying rotası için songId'yi yerleştirilmiş tam rota döndürür. */
         fun nowPlayingRoute(songId: String): String = "now_playing/$songId"
+        
+        /** PlaylistDetail rotası için playlistId'yi yerleştirilmiş tam rota döndürür. */
+        fun playlistDetailRoute(playlistId: String): String = "playlist_detail/$playlistId"
     }
 }
 
