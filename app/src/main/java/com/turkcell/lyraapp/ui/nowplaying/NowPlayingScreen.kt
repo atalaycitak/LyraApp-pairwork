@@ -44,11 +44,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.Player
-import androidx.media3.ui.PlayerView
 import com.turkcell.lyraapp.ui.icons.LyraIcons
 import com.turkcell.lyraapp.ui.theme.LyraAppTheme
 
@@ -87,7 +84,6 @@ fun NowPlayingRoute(
 
     NowPlayingScreen(
         state = uiState,
-        player = viewModel.player,
         onIntent = viewModel::onIntent,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
@@ -110,7 +106,6 @@ fun NowPlayingRoute(
 @Composable
 fun NowPlayingScreen(
     state: NowPlayingUiState,
-    player: Player?,
     onIntent: (NowPlayingIntent) -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
@@ -120,37 +115,74 @@ fun NowPlayingScreen(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            TopBar(
-                playlistName = state.playlistName,
-                onBackClick = { onIntent(NowPlayingIntent.NavigateBack) },
-            )
-            
+        if (state.isLoading && state.trackTitle.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center,
             ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator()
-                } else {
-                    AndroidView(
-                        factory = { context ->
-                            PlayerView(context).apply {
-                                this.player = player
-                            }
-                        },
-                        update = { view ->
-                            view.player = player
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                TopBar(
+                    playlistName = state.playlistName,
+                    onBackClick = { onIntent(NowPlayingIntent.NavigateBack) },
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                AlbumArtwork(
+                    startColor = state.artworkStartColor,
+                    endColor = state.artworkEndColor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(24.dp)),
+                )
+
+                Spacer(Modifier.height(28.dp))
+
+                TrackInfo(
+                    title = state.trackTitle,
+                    artist = state.artistName,
+                    isFavorite = state.isFavorite,
+                    onFavoriteClick = { onIntent(NowPlayingIntent.ToggleFavorite) },
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                ProgressSection(
+                    currentPositionMs = state.currentPositionMs,
+                    durationMs = state.durationMs,
+                    onSeek = { onIntent(NowPlayingIntent.SeekTo(it)) },
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                PlaybackControls(
+                    isPlaying = state.isPlaying,
+                    isShuffleOn = state.isShuffleOn,
+                    isRepeatOn = state.isRepeatOn,
+                    onTogglePlayPause = { onIntent(NowPlayingIntent.TogglePlayPause) },
+                    onSkipPrevious = { onIntent(NowPlayingIntent.SkipPrevious) },
+                    onSkipNext = { onIntent(NowPlayingIntent.SkipNext) },
+                    onToggleShuffle = { onIntent(NowPlayingIntent.ToggleShuffle) },
+                    onToggleRepeat = { onIntent(NowPlayingIntent.ToggleRepeat) },
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                BottomToolbar()
+
+                Spacer(Modifier.height(16.dp))
             }
         }
     }
@@ -205,7 +237,274 @@ private fun TopBar(
     }
 }
 
-// Custom components removed for default ExoPlayer UI
+/**
+ * Album kapagi: gradyan arka plan + hafif radyal parlama + konsantrik daire deseni.
+ *
+ * Gercek API gorsel URL'si sagladiginda bu composable gorsel yukleyiciyle degistirilir.
+ */
+@Composable
+private fun AlbumArtwork(
+    startColor: Long,
+    endColor: Long,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(startColor), Color(endColor)),
+                ),
+            )
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.14f),
+                        Color.Transparent,
+                    ),
+                    radius = 600f,
+                ),
+            ),
+    )
+}
+
+/** Sarki basligi + sanatci adi + favori kalp ikonu. */
+@Composable
+private fun TrackInfo(
+    title: String,
+    artist: String,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = artist,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        IconButton(onClick = onFavoriteClick) {
+            Icon(
+                imageVector = if (isFavorite) LyraIcons.Favorite else LyraIcons.FavoriteOutlined,
+                contentDescription = "Favori",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp),
+            )
+        }
+    }
+}
+
+/** Ilerleme cubugu + sure etiketleri. */
+@Composable
+private fun ProgressSection(
+    currentPositionMs: Long,
+    durationMs: Long,
+    onSeek: (Long) -> Unit,
+) {
+    val progress = if (durationMs > 0) currentPositionMs.toFloat() / durationMs.toFloat() else 0f
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Slider(
+            value = progress,
+            onValueChange = { fraction ->
+                onSeek((fraction * durationMs).toLong())
+            },
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = formatDuration(currentPositionMs),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = formatDuration(durationMs),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** Oynatma kontrolleri: karistir, onceki, oynat/duraklat, sonraki, tekrarla. */
+@Composable
+private fun PlaybackControls(
+    isPlaying: Boolean,
+    isShuffleOn: Boolean,
+    isRepeatOn: Boolean,
+    onTogglePlayPause: () -> Unit,
+    onSkipPrevious: () -> Unit,
+    onSkipNext: () -> Unit,
+    onToggleShuffle: () -> Unit,
+    onToggleRepeat: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        ControlIcon(
+            icon = LyraIcons.Shuffle,
+            contentDescription = "Karistir",
+            tint = if (isShuffleOn) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+            onClick = onToggleShuffle,
+        )
+        ControlIcon(
+            icon = LyraIcons.SkipPrevious,
+            contentDescription = "Onceki",
+            tint = MaterialTheme.colorScheme.onSurface,
+            onClick = onSkipPrevious,
+            size = 36,
+        )
+        PlayPauseButton(
+            isPlaying = isPlaying,
+            onClick = onTogglePlayPause,
+        )
+        ControlIcon(
+            icon = LyraIcons.SkipNext,
+            contentDescription = "Sonraki",
+            tint = MaterialTheme.colorScheme.onSurface,
+            onClick = onSkipNext,
+            size = 36,
+        )
+        ControlIcon(
+            icon = LyraIcons.Repeat,
+            contentDescription = "Tekrarla",
+            tint = if (isRepeatOn) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+            onClick = onToggleRepeat,
+        )
+    }
+}
+
+/** Buyuk pembe oynat/duraklat butonu. */
+@Composable
+private fun PlayPauseButton(
+    isPlaying: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(72.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = if (isPlaying) LyraIcons.Pause else LyraIcons.PlayArrow,
+            contentDescription = if (isPlaying) "Duraklat" else "Oynat",
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.size(36.dp),
+        )
+    }
+}
+
+/** Tekil kontrol ikonu (karistir, onceki, sonraki, tekrarla). */
+@Composable
+private fun ControlIcon(
+    icon: ImageVector,
+    contentDescription: String,
+    tint: Color,
+    onClick: () -> Unit,
+    size: Int = 28,
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.size(size.dp),
+        )
+    }
+}
+
+/** Alt arac cubugu: kuyruk, arkaplan, sarki sozleri ikonlari. */
+@Composable
+private fun BottomToolbar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = { /* Kuyruk aksiyonu henuz tanimli degil */ }) {
+            Icon(
+                imageVector = LyraIcons.QueueMusic,
+                contentDescription = "Kuyruk",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { /* Arkaplan aksiyonu henuz tanimli degil */ },
+                ),
+        ) {
+            Icon(
+                imageVector = LyraIcons.Notifications,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+            Text(
+                text = "Arkaplan",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = { /* Sarki sozleri aksiyonu henuz tanimli degil */ }) {
+            Icon(
+                imageVector = LyraIcons.Lyrics,
+                contentDescription = "Sarki Sozleri",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+    }
+}
+
+/** Milisaniyeyi "m:ss" formatina cevirir. */
+private fun formatDuration(ms: Long): String {
+    val totalSeconds = ms / 1_000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%d:%02d".format(minutes, seconds)
+}
 
 // ── Preview ──
 
@@ -227,7 +526,7 @@ private val previewState = NowPlayingUiState(
 @Composable
 private fun NowPlayingScreenDarkPreview() {
     LyraAppTheme(darkTheme = true) {
-        NowPlayingScreen(state = previewState, player = null, onIntent = {})
+        NowPlayingScreen(state = previewState, onIntent = {})
     }
 }
 
@@ -235,6 +534,6 @@ private fun NowPlayingScreenDarkPreview() {
 @Composable
 private fun NowPlayingScreenLightPreview() {
     LyraAppTheme(darkTheme = false) {
-        NowPlayingScreen(state = previewState, player = null, onIntent = {})
+        NowPlayingScreen(state = previewState, onIntent = {})
     }
 }

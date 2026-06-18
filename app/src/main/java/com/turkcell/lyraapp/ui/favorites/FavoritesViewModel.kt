@@ -88,9 +88,19 @@ class FavoritesViewModel @Inject constructor(
     }
 
     private fun sendMessageForItem(itemId: String) {
-        val title = allItems.firstOrNull { it.id == itemId }?.title ?: return
+        val item = allItems.firstOrNull { it.id == itemId } ?: return
         viewModelScope.launch {
-            _effect.send(FavoritesEffect.ShowMessage("$title açılıyor."))
+            when (item.type) {
+                com.turkcell.lyraapp.data.favorites.FavoriteItemType.Song -> {
+                    _effect.send(FavoritesEffect.NavigateToPlayer(itemId))
+                }
+                com.turkcell.lyraapp.data.favorites.FavoriteItemType.Playlist -> {
+                    _effect.send(FavoritesEffect.NavigateToPlaylistDetail(itemId))
+                }
+                else -> {
+                    _effect.send(FavoritesEffect.ShowMessage("${item.title} açılıyor."))
+                }
+            }
         }
     }
 

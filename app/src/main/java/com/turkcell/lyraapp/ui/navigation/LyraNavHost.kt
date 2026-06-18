@@ -55,11 +55,24 @@ fun LyraNavHost(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            if (isTopLevelRoute(currentRoute)) {
-                LyraBottomBar(
-                    currentRoute = currentRoute,
-                    onTabSelected = navController::navigateToTab,
-                )
+            if (currentRoute != LyraDestination.Login.route && 
+                currentRoute != LyraDestination.Register.route && 
+                currentRoute?.startsWith(LyraDestination.NowPlaying.route.substringBefore("{")) != true) {
+                androidx.compose.foundation.layout.Column {
+                    com.turkcell.lyraapp.ui.components.miniplayer.LyraMiniPlayerRoute(
+                        onNavigateToNowPlaying = { songId ->
+                            navController.navigate(LyraDestination.nowPlayingRoute(songId)) {
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                    if (isTopLevelRoute(currentRoute)) {
+                        LyraBottomBar(
+                            currentRoute = currentRoute,
+                            onTabSelected = navController::navigateToTab,
+                        )
+                    }
+                }
             }
         },
     ) { innerPadding ->
@@ -113,10 +126,28 @@ fun LyraNavHost(
                         navController.navigate(LyraDestination.playlistDetailRoute(playlistId)) {
                             launchSingleTop = true
                         }
+                    },
+                    onNavigateToPlayer = { songId ->
+                        navController.navigate(LyraDestination.nowPlayingRoute(songId)) {
+                            launchSingleTop = true
+                        }
                     }
                 )
             }
-            composable(LyraDestination.Favorites.route) { FavoritesRoute() }
+            composable(LyraDestination.Favorites.route) { 
+                com.turkcell.lyraapp.ui.favorites.FavoritesRoute(
+                    onNavigateToPlayer = { songId ->
+                        navController.navigate(LyraDestination.nowPlayingRoute(songId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToPlaylistDetail = { playlistId ->
+                        navController.navigate(LyraDestination.playlistDetailRoute(playlistId)) {
+                            launchSingleTop = true
+                        }
+                    }
+                ) 
+            }
             composable(LyraDestination.Profile.route) { com.turkcell.lyraapp.ui.profile.ProfileRoute() }
             composable(
                 route = LyraDestination.NowPlaying.route,
