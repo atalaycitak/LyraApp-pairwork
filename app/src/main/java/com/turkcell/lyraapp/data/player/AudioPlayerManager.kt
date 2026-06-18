@@ -7,6 +7,8 @@ import com.turkcell.lyraapp.data.song.SongRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,7 +40,7 @@ class AudioPlayerManager @Inject constructor(
     private val _playerState = MutableStateFlow(GlobalPlayerState())
     val playerState: StateFlow<GlobalPlayerState> = _playerState.asStateFlow()
 
-    private val scope = CoroutineScope(Dispatchers.Main + Job())
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var positionPollingJob: Job? = null
 
     private val playerListener = object : Player.Listener {
@@ -129,6 +131,13 @@ class AudioPlayerManager @Inject constructor(
 
     fun seekTo(positionMs: Long) {
         player.seekTo(positionMs)
+    }
+
+    fun release() {
+        positionPollingJob?.cancel()
+        positionPollingJob = null
+        player.removeListener(playerListener)
+        scope.cancel()
     }
 
     private fun startPositionPolling() {

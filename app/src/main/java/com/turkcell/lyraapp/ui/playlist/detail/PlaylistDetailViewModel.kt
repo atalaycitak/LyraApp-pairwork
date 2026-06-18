@@ -41,24 +41,14 @@ class PlaylistDetailViewModel @Inject constructor(
 
     private fun loadPlaylist(playlistId: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true) }
             val result = playlistRepository.getPlaylistDetail(playlistId)
             result.fold(
                 onSuccess = { detail ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            playlistDetail = detail
-                        )
-                    }
+                    _uiState.update { it.copy(isLoading = false, playlistDetail = detail) }
                 },
                 onFailure = { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message ?: "Bilinmeyen bir hata oluştu"
-                        )
-                    }
+                    _uiState.update { it.copy(isLoading = false) }
                     sendEffect(PlaylistDetailEffect.ShowSnackbar(error.message ?: "Bilinmeyen bir hata oluştu"))
                 }
             )

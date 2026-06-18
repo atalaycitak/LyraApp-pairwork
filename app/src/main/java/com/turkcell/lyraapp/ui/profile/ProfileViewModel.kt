@@ -46,26 +46,15 @@ class ProfileViewModel @Inject constructor(
 
     private fun loadProfile() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true) }
             val result = profileRepository.getProfileInfo()
             result.fold(
                 onSuccess = { profile ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            profileInfo = profile
-                        )
-                    }
+                    _uiState.update { it.copy(isLoading = false, profileInfo = profile) }
                 },
                 onFailure = { error ->
-                    val msg = error.message ?: "Profil bilgisi alınamadı"
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = msg
-                        )
-                    }
-                    sendEffect(ProfileEffect.ShowSnackbar(msg))
+                    _uiState.update { it.copy(isLoading = false) }
+                    sendEffect(ProfileEffect.ShowSnackbar(error.message ?: "Profil bilgisi alınamadı"))
                 }
             )
         }

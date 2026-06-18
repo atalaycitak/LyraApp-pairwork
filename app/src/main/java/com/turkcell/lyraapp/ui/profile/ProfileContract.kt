@@ -5,7 +5,6 @@ import com.turkcell.lyraapp.data.profile.UserProfile
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val profileInfo: UserProfile? = null,
-    val errorMessage: String? = null,
     val isDarkMode: Boolean = false
 )
 
