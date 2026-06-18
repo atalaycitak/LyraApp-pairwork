@@ -3,6 +3,7 @@ package com.turkcell.lyraapp.data.player
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.turkcell.lyraapp.data.common.ArtworkPalette
 import com.turkcell.lyraapp.data.song.SongRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.abs
 
 data class GlobalPlayerState(
     val songId: String? = null,
@@ -36,9 +36,9 @@ data class GlobalPlayerState(
 class AudioPlayerManager @Inject constructor(
     val player: ExoPlayer,
     private val songRepository: SongRepository
-) {
+) : PlayerController {
     private val _playerState = MutableStateFlow(GlobalPlayerState())
-    val playerState: StateFlow<GlobalPlayerState> = _playerState.asStateFlow()
+    override val playerState: StateFlow<GlobalPlayerState> = _playerState.asStateFlow()
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var positionPollingJob: Job? = null
@@ -71,7 +71,7 @@ class AudioPlayerManager @Inject constructor(
         player.addListener(playerListener)
     }
 
-    fun playSong(songId: String) {
+    override fun playSong(songId: String) {
         if (_playerState.value.songId == songId) {
             // Şarkı zaten yüklü, çalmıyorsa başlat
             if (!player.isPlaying) player.play()
@@ -92,7 +92,7 @@ class AudioPlayerManager @Inject constructor(
             }
 
             val song = songResult.getOrThrow()
-            val (colorStart, colorEnd) = colorPairForId(song.id)
+            val (colorStart, colorEnd) = ArtworkPalette.colorPairForId(song.id)
 
             _playerState.update {
                 it.copy(
@@ -121,7 +121,7 @@ class AudioPlayerManager @Inject constructor(
         }
     }
 
-    fun togglePlayPause() {
+    override fun togglePlayPause() {
         if (player.isPlaying) {
             player.pause()
         } else {
@@ -129,11 +129,11 @@ class AudioPlayerManager @Inject constructor(
         }
     }
 
-    fun seekTo(positionMs: Long) {
+    override fun seekTo(positionMs: Long) {
         player.seekTo(positionMs)
     }
 
-    fun release() {
+    override fun release() {
         positionPollingJob?.cancel()
         positionPollingJob = null
         player.removeListener(playerListener)
@@ -151,25 +151,4 @@ class AudioPlayerManager @Inject constructor(
         }
     }
 
-    private fun colorPairForId(id: String): Pair<Long, Long> {
-        val index = abs(id.hashCode()) % ARTWORK_PALETTE.size
-        return ARTWORK_PALETTE[index]
-    }
-
-    private companion object {
-        val ARTWORK_PALETTE = listOf(
-            Pair(0xFF8B6FB8L, 0xFF4A3D6BL),
-            Pair(0xFF7C83D9L, 0xFF3E4486L),
-            Pair(0xFFD98E4AL, 0xFF8A5526L),
-            Pair(0xFF4AC2A8L, 0xFF1F6E5CL),
-            Pair(0xFF6FBF5AL, 0xFF356B2AL),
-            Pair(0xFF5AAFC9L, 0xFF2A5F73L),
-            Pair(0xFF9B7FC4L, 0xFF5A4480L),
-            Pair(0xFF6B5FB8L, 0xFF3A3270L),
-            Pair(0xFF3FAE9CL, 0xFF1E5D52L),
-            Pair(0xFFD9604AL, 0xFF8A3020L),
-            Pair(0xFF4A8BD9L, 0xFF1E4580L),
-            Pair(0xFFD9A84AL, 0xFF8A6020L),
-        )
-    }
 }

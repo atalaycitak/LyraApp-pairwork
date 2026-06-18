@@ -1,15 +1,11 @@
 package com.turkcell.lyraapp.ui.navigation
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -203,27 +199,5 @@ private fun NavHostController.navigateToHomeClearingAuth() {
     navigate(LyraDestination.Home.route) {
         popUpTo(LyraDestination.Login.route) { inclusive = true }
         launchSingleTop = true
-    }
-}
-
-/**
- * Geçici sekme içeriği. Sekme ekranları henüz kapsamda değildir; her biri kendi
- * feature paketinde MVI sözleşmesiyle (Contract + ViewModel + Route/Screen) yazıldığında
- * bu composable kaldırılacak ve rotalar gerçek Route'lara bağlanacaktır.
- */
-@Composable
-private fun PlaceholderScreen(
-    title: String,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }

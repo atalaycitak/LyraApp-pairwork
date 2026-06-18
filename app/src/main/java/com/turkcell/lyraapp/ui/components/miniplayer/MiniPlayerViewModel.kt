@@ -2,7 +2,7 @@ package com.turkcell.lyraapp.ui.components.miniplayer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.turkcell.lyraapp.data.player.AudioPlayerManager
+import com.turkcell.lyraapp.data.player.PlayerController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MiniPlayerViewModel @Inject constructor(
-    private val audioPlayerManager: AudioPlayerManager
+    private val playerController: PlayerController
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MiniPlayerUiState())
@@ -27,7 +27,7 @@ class MiniPlayerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            audioPlayerManager.playerState.collect { globalState ->
+            playerController.playerState.collect { globalState ->
                 val isVisible = globalState.songId != null
                 val progress = if (globalState.durationMs > 0) {
                     globalState.currentPositionMs.toFloat() / globalState.durationMs.toFloat()
@@ -51,7 +51,7 @@ class MiniPlayerViewModel @Inject constructor(
 
     fun onIntent(intent: MiniPlayerIntent) {
         when (intent) {
-            is MiniPlayerIntent.TogglePlayPause -> audioPlayerManager.togglePlayPause()
+            is MiniPlayerIntent.TogglePlayPause -> playerController.togglePlayPause()
             is MiniPlayerIntent.NextSong -> { /* İleri sar / Kuyrukta sonrakine geç mantığı eklenebilir */ }
             is MiniPlayerIntent.ContainerClicked -> {
                 val currentSongId = _uiState.value.songId
