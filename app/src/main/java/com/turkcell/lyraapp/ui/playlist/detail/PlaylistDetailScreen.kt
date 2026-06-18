@@ -7,8 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import com.turkcell.lyraapp.ui.icons.LyraIcons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.turkcell.lyraapp.data.playlist.SongItem
 
 @Composable
@@ -94,10 +93,10 @@ fun PlaylistDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnBackClick) }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Geri", tint = Color.White)
+                        Icon(imageVector = LyraIcons.ArrowBack, contentDescription = "Geri", tint = Color.White)
                     }
                     IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnMoreClick) }) {
-                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Daha Fazla", tint = Color.White)
+                        Icon(imageVector = LyraIcons.MoreVert, contentDescription = "Daha Fazla", tint = Color.White)
                     }
                 }
 
@@ -162,13 +161,13 @@ fun PlaylistDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         IconButton(onClick = { /* Like Playlist */ }) {
-                            Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Beğen", tint = Color.White)
+                            Icon(imageVector = LyraIcons.FavoriteOutlined, contentDescription = "Beğen", tint = Color.White)
                         }
                         IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnDownloadClick) }) {
-                            Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "İndir", tint = Color.White)
+                            Icon(imageVector = LyraIcons.KeyboardArrowDown, contentDescription = "İndir", tint = Color.White)
                         }
                         IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnAddClick) }) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = "Ekle", tint = Color.White)
+                            Icon(imageVector = LyraIcons.Add, contentDescription = "Ekle", tint = Color.White)
                         }
                     }
 
@@ -177,7 +176,7 @@ fun PlaylistDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnShuffleClick) }) {
-                            Icon(imageVector = Icons.Default.Sync, contentDescription = "Karıştır", tint = Color.White) // Shuffle icon alternative
+                            Icon(imageVector = LyraIcons.Shuffle, contentDescription = "Karıştır", tint = Color.White)
                         }
                         Box(
                             modifier = Modifier
@@ -188,7 +187,7 @@ fun PlaylistDetailScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.PlayArrow,
+                                imageVector = LyraIcons.PlayArrow,
                                 contentDescription = "Oynat",
                                 tint = Color(0xFF880E4F),
                                 modifier = Modifier.size(32.dp)
@@ -253,7 +252,7 @@ fun SongListItem(
             if (song.isPlaying) {
                 // Oynatılan şarkı için ikon (equilizer benzeri)
                 Icon(
-                    imageVector = Icons.Default.Menu, // Equilizer alternatifi
+                    imageVector = LyraIcons.Waveform,
                     contentDescription = "Oynatılıyor",
                     tint = Color.White,
                     modifier = Modifier.size(24.dp)
@@ -293,7 +292,7 @@ fun SongListItem(
         // Like Button
         IconButton(onClick = onLikeClick, modifier = Modifier.size(36.dp)) {
             Icon(
-                imageVector = if (song.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                imageVector = if (song.isLiked) LyraIcons.Favorite else LyraIcons.FavoriteOutlined,
                 contentDescription = "Beğen",
                 tint = if (song.isLiked) Color(0xFFFFB6C1) else Color.Gray,
                 modifier = Modifier.size(20.dp)
@@ -303,7 +302,7 @@ fun SongListItem(
         // More Button
         IconButton(onClick = { /* TODO: Song Options */ }, modifier = Modifier.size(36.dp)) {
             Icon(
-                imageVector = Icons.Default.MoreVert,
+                imageVector = LyraIcons.MoreVert,
                 contentDescription = "Daha Fazla",
                 tint = Color.Gray,
                 modifier = Modifier.size(20.dp)

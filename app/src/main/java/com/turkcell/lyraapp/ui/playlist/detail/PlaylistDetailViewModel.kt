@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.lyraapp.data.playlist.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,8 +22,8 @@ class PlaylistDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PlaylistDetailUiState())
     val uiState: StateFlow<PlaylistDetailUiState> = _uiState.asStateFlow()
 
-    private val _effect = MutableSharedFlow<PlaylistDetailEffect>()
-    val effect: SharedFlow<PlaylistDetailEffect> = _effect.asSharedFlow()
+    private val _effect = Channel<PlaylistDetailEffect>(Channel.BUFFERED)
+    val effect: Flow<PlaylistDetailEffect> = _effect.receiveAsFlow()
 
     fun onIntent(intent: PlaylistDetailIntent) {
         when (intent) {
@@ -85,7 +85,7 @@ class PlaylistDetailViewModel @Inject constructor(
 
     private fun sendEffect(effect: PlaylistDetailEffect) {
         viewModelScope.launch {
-            _effect.emit(effect)
+            _effect.send(effect)
         }
     }
 }

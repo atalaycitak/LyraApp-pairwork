@@ -117,21 +117,23 @@
 ### Now Playing (Şimdi Çalıyor) Ekranı
 
 - Seçim: **MVI** — `NowPlayingContract.kt` (State + Intent + Effect), `NowPlayingViewModel.kt`,
-  `NowPlayingScreen.kt` (Route/Screen ayrımı), `NowPlayingRepository` interface +
-  `MockNowPlayingRepository`.
+  `NowPlayingScreen.kt` (Route/Screen ayrımı).
 
-- Son Güncelleme Tarihi: 13.06.2026
+- Son Güncelleme Tarihi: 18.06.2026
 
 - Uygulama: `ui/nowplaying/` paketi Login/Home referans implementasyonlarıyla aynı MVI desenini
-  izler. Ekran üst bar (chevron + "ŞİMDİ ÇALIYOR" + menü), büyük album kapağı (gradyan),
-  şarkı bilgisi + favori, ilerleme çubuğu (Slider), oynatma kontrolleri (shuffle, prev,
-  play/pause, next, repeat) ve alt araç çubuğu (kuyruk, arkaplan, şarkı sözleri) içerir.
-  Oynatma ilerlemesi bu iterasyonda coroutine tabanlı simülasyonla sağlanır; gerçek medya
-  oynatıcı (ExoPlayer/MediaSession) ayrı iterasyonda entegre edilecektir. `LyraIcons.kt`'ye
-  11 yeni ikon eklenmiştir. `LyraDestination.NowPlaying` üst düzey sekme değildir; alt gezinme
-  çubuğu bu ekranda gizlenir.
+  izler. `NowPlayingViewModel`, `SongRepository` (Retrofit) uzerinden dogrudan sarki metadatasini
+  ve stream URL'ini ceker; ExoPlayer ile ses akisi saglar. Progress takibi ExoPlayer
+  `Player.Listener` uzerinden 500ms polling ile yapilir. ExoPlayer `NowPlayingModule`'de
+  `@ApplicationContext` ile `@Provides @Singleton` olarak saglanir. `LyraDestination.NowPlaying`
+  ust duzey sekme degildir; alt gezinme cubugu bu ekranda gizlenir.
 
-- Sebep: Tasarım ekran görüntüsüne uyum; mevcut MVI + stub repository deseniyle tutarlılık.
+- 18.06.2026 guncellemesi: ExoPlayer entegrasyonu sonrasi `NowPlayingRepository` interface,
+  `MockNowPlayingRepository` ve `NowPlayingModels.kt` (Track, NowPlayingInfo) artik ViewModel
+  tarafindan kullanilmadigindan kaldirildi. `NowPlayingModule` yalnizca ExoPlayer provider'ini
+  icerecek sekilde sadelestirildi.
+
+- Sebep: Tasarim ekran goruntusune uyum; ExoPlayer ile gercek ses akisi.
 
 
 ### Kütüphane (Library) Ekranı
@@ -214,6 +216,25 @@
 
 - Sebep: Mevcut alt gezinme çubuğundaki Favorites sekmesini gerçek MVI ekranına bağlamak;
   backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
+
+
+### Olu Kod Temizligi ve MVI Sapmasi Duzenlemesi
+
+- Seçim: NowPlayingRepository/MockNowPlayingRepository/NowPlayingModels kaldirildi;
+  PlaylistDetailViewModel'de `MutableSharedFlow` → `Channel` gecisi yapildi.
+
+- Son Güncelleme Tarihi: 18.06.2026
+
+- Uygulama:
+  1. `data/nowplaying/` altindaki `NowPlayingRepository.kt`, `MockNowPlayingRepository.kt`,
+     `NowPlayingModels.kt` silindi. `di/NowPlayingModule.kt`'deki ilgili `@Binds` binding'i
+     kaldirildi; modul `abstract class` → `object` donusturuldu.
+  2. `PlaylistDetailViewModel.kt`'de `MutableSharedFlow` + `asSharedFlow()` kaldirilarak
+     MVI standardi olan `Channel(Channel.BUFFERED)` + `receiveAsFlow()` kullanima alindi.
+
+- Sebep: ExoPlayer entegrasyonu sonrasi NowPlayingRepository kullanilmiyordu (olu kod).
+  MutableSharedFlow tek seferlik olaylar icin konfigurasyon degisiminde tekrar tetiklenme
+  riski tasir; Channel ise mvi-contracts.md §4 kuralina uygundur.
 
 
 ### Kullanıcı Arayüzü Metin Dili
