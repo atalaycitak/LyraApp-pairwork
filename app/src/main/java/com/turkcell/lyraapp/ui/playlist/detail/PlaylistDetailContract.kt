@@ -4,8 +4,7 @@ import com.turkcell.lyraapp.data.playlist.PlaylistDetailModel
 
 data class PlaylistDetailUiState(
     val isLoading: Boolean = false,
-    val playlistDetail: PlaylistDetailModel? = null,
-    val errorMessage: String? = null
+    val playlistDetail: PlaylistDetailModel? = null
 )
 
 sealed interface PlaylistDetailIntent {

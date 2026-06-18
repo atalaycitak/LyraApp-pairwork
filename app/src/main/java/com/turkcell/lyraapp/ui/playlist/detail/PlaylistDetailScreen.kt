@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.turkcell.lyraapp.data.playlist.SongItem
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun PlaylistDetailRoute(
@@ -43,21 +44,19 @@ fun PlaylistDetailScreen(
     onNavigateToPlayer: (String) -> Unit,
     viewModel: PlaylistDetailViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val effectFlow = viewModel.effect
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(playlistId) {
         viewModel.onIntent(PlaylistDetailIntent.LoadPlaylist(playlistId))
     }
 
-    LaunchedEffect(effectFlow) {
-        effectFlow.collect { effect ->
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
             when (effect) {
                 is PlaylistDetailEffect.NavigateBack -> onNavigateBack()
                 is PlaylistDetailEffect.NavigateToPlayer -> onNavigateToPlayer(effect.songId)
-                is PlaylistDetailEffect.ShowSnackbar -> {
-                    // TODO: Show snackbar
-                }
+                is PlaylistDetailEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
             }
         }
     }
@@ -74,12 +73,6 @@ fun PlaylistDetailScreen(
     ) {
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.White)
-        } else if (uiState.errorMessage != null) {
-            Text(
-                text = uiState.errorMessage!!,
-                color = Color.White,
-                modifier = Modifier.align(Alignment.Center)
-            )
         } else if (uiState.playlistDetail != null) {
             val detail = uiState.playlistDetail!!
             
@@ -218,6 +211,11 @@ fun PlaylistDetailScreen(
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
