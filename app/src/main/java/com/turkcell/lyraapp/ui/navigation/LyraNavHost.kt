@@ -128,6 +128,23 @@ fun LyraNavHost(
                     onNavigateBack = { navController.popBackStack() },
                 )
             }
+            composable(
+                route = LyraDestination.PlaylistDetail.route,
+                arguments = listOf(
+                    navArgument("playlistId") { type = NavType.StringType }
+                ),
+            ) { backStackEntry ->
+                val playlistId = backStackEntry.arguments?.getString("playlistId") ?: return@composable
+                com.turkcell.lyraapp.ui.playlist.detail.PlaylistDetailRoute(
+                    playlistId = playlistId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPlayer = { songId ->
+                        navController.navigate(LyraDestination.nowPlayingRoute(songId)) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
         }
     }
 }
