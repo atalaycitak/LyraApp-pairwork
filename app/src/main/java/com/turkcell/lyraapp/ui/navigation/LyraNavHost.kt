@@ -108,11 +108,16 @@ fun LyraNavHost(
                         navController.navigate(LyraDestination.CreatePlaylist.route) {
                             launchSingleTop = true
                         }
+                    },
+                    onNavigateToPlaylistDetail = { playlistId ->
+                        navController.navigate(LyraDestination.playlistDetailRoute(playlistId)) {
+                            launchSingleTop = true
+                        }
                     }
                 )
             }
             composable(LyraDestination.Favorites.route) { FavoritesRoute() }
-            composable(LyraDestination.Profile.route) { PlaceholderScreen(title = "Profil") }
+            composable(LyraDestination.Profile.route) { com.turkcell.lyraapp.ui.profile.ProfileRoute() }
             composable(
                 route = LyraDestination.NowPlaying.route,
                 arguments = listOf(
