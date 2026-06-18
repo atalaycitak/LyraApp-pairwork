@@ -46,8 +46,8 @@ class ProfileViewModelTest {
         val state = viewModel.uiState.value
         assertFalse("Yükleme durumu false olmalı", state.isLoading)
         assertNotNull("ProfileInfo boş olmamalı", state.profileInfo)
-        assertEquals("Atalay Çıtak", state.profileInfo?.name)
-        assertEquals("AÇ", state.profileInfo?.initials)
+        assertEquals("Zeynep Kaya", state.profileInfo?.name)
+        assertEquals("ZK", state.profileInfo?.initials)
         assertEquals(127, state.profileInfo?.playlistCount)
         assertTrue("Premium olmalı", state.profileInfo?.isPremium == true)
     }

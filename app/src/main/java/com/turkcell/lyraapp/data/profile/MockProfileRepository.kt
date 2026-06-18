@@ -12,9 +12,9 @@ class MockProfileRepository @Inject constructor() : ProfileRepository {
         return Result.success(
             UserProfile(
                 id = "usr_123",
-                name = "Atalay Çıtak",
-                username = "atalaycitak",
-                initials = "AÇ",
+                name = "Zeynep Kaya",
+                username = "zeynepk",
+                initials = "ZK",
                 isPremium = true,
                 playlistCount = 127,
                 followersCount = "1.2B",
