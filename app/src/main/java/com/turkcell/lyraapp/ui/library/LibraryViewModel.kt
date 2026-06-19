@@ -106,6 +106,9 @@ class LibraryViewModel @Inject constructor(
         val item = allItems.firstOrNull { it.id == itemId } ?: return
         viewModelScope.launch {
             when (item.type) {
+                com.turkcell.lyraapp.data.library.LibraryItemType.Song -> {
+                    _effect.send(LibraryEffect.NavigateToPlayer(itemId))
+                }
                 com.turkcell.lyraapp.data.library.LibraryItemType.Playlist -> {
                     _effect.send(LibraryEffect.NavigateToPlaylistDetail(itemId))
                 }

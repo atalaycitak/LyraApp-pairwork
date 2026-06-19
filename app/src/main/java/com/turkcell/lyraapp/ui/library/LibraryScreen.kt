@@ -409,9 +409,7 @@ private val previewState = LibraryUiState(
     selectedFilterId = LibraryUiState.DEFAULT_FILTER_ID,
     filters = listOf(
         LibraryFilter("filter-all", "Tümü", null),
-        LibraryFilter("filter-playlists", "Çalma listeleri", LibraryItemType.Playlist),
-        LibraryFilter("filter-albums", "Albümler", LibraryItemType.Album),
-        LibraryFilter("filter-artists", "Sanatçılar", LibraryItemType.Artist),
+        LibraryFilter("filter-songs", "Şarkılar", LibraryItemType.Song),
     ),
     quickActions = listOf(
         LibraryQuickAction(
@@ -423,14 +421,14 @@ private val previewState = LibraryUiState(
         LibraryQuickAction(
             "action-downloads",
             "İndirilenler",
-            "Çevrimdışı dinlemeye hazır",
+            "Çevrimdışı dinleme yakında",
             LibraryQuickActionType.Downloads,
         ),
     ),
     items = listOf(
-        LibraryItem("library-1", "Gece Sürüşü", "Çalma listesi - 42 şarkı", LibraryItemType.Playlist, 0xFF8B6FB8, 0xFF4A3D6B, true),
-        LibraryItem("library-2", "Derin Mavi", "Albüm - Okyanus", LibraryItemType.Album, 0xFF6FBF5A, 0xFF356B2A, true),
-        LibraryItem("library-3", "Polaris", "Sanatçı - 128 bin dinleyici", LibraryItemType.Artist, 0xFF3D5A80, 0xFF1B2A45, false),
+        LibraryItem("s_neon-tide", "Neon Tide", "Aurora Drift", LibraryItemType.Song, 0xFF8B6FB8, 0xFF4A3D6B, false),
+        LibraryItem("s_midnight-road", "Midnight Road", "City Lights", LibraryItemType.Song, 0xFF6FBF5A, 0xFF356B2A, false),
+        LibraryItem("s_sunset-loop", "Sunset Loop", "Mira", LibraryItemType.Song, 0xFF3D5A80, 0xFF1B2A45, false),
     ),
 )
 

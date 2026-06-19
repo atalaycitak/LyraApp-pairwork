@@ -140,18 +140,20 @@
 
 - Seçim: **MVI** — `LibraryContract.kt` (State + Intent + Effect), `LibraryViewModel.kt`,
   `LibraryScreen.kt` (Route/Screen ayrımı), `LibraryRepository` interface +
-  `MockLibraryRepository`.
+  `RetrofitLibraryRepository`.
 
-- Son Güncelleme Tarihi: 13.06.2026
+- Son Güncelleme Tarihi: 19.06.2026
 
 - Uygulama: `ui/library/` paketi mevcut Login/Home/Search referans implementasyonlarıyla aynı
-  MVI desenini izler. Ekran başlık, hızlı kütüphane aksiyonları, filtre çipleri ve kayıtlı
-  içerik listesinden oluşur. Veri katmanı `data/library/` altında, DI bağlaması
-  `di/LibraryModule.kt` içinde yer alır. Navigasyonda `LyraNavHost` içindeki geçici
-  `PlaceholderScreen` kaldırılarak `LibraryRoute()` bağlanmıştır.
+  MVI desenini izler. Ekran başlık, hızlı kütüphane aksiyonları, filtre çipleri ve API'dan gelen
+  şarkı listesinden oluşur. Veri katmanı `data/library/` altında, DI bağlaması
+  `di/LibraryModule.kt` içinde yer alır. `RetrofitLibraryRepository`, `SongRepository.getSongs`
+  üzerinden `/api/v1/songs` verisini çeker ve `LibraryItem` modeline dönüştürür. API'da artwork
+  veya background alanı olmadığı için `ArtworkPalette.colorPairForId(song.id)` ile renk çifti
+  üretilir. Şarkı item'ına tıklanınca gerçek `songId` ile `NowPlaying` ekranına gidilir.
 
-- Sebep: Mevcut alt gezinme çubuğundaki Library sekmesini gerçek MVI ekranına bağlamak;
-  backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
+- Sebep: API sözleşmesinde Library için ayrı endpoint yoktur; mevcut `/api/v1/songs` tasarımı
+  esas alınarak Library ekranındaki müzik listesi mock veriden gerçek API verisine taşınmıştır.
 
 
 ### Songs REST API Entegrasyonu (Retrofit)
