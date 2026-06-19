@@ -3,8 +3,9 @@ package com.turkcell.lyraapp.data.favorites
 /**
  * Favorites ekraninin repository'den aldigi aggregate model.
  *
- * Backend ve gercek artwork henuz hazir olmadigindan kapaklar mevcut feature'larda oldugu gibi
- * ARGB renk ciftleriyle temsil edilir. Gercek API geldiginde model image URL ile genisletilebilir.
+ * API'da favoriler ve artwork icin ayri alanlar henuz bulunmadigindan feed, `/api/v1/songs`
+ * yanitindan turetilir; kapaklar mevcut feature'larda oldugu gibi ARGB renk ciftleriyle
+ * temsil edilir. Gercek favorites/artwork API'lari geldiginde model genisletilebilir.
  */
 data class FavoritesFeed(
     val filters: List<FavoriteFilter>,

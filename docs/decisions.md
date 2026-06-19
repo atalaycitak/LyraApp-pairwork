@@ -206,18 +206,23 @@
 
 - Seçim: **MVI** - `FavoritesContract.kt` (State + Intent + Effect), `FavoritesViewModel.kt`,
   `FavoritesScreen.kt` (Route/Screen ayrımı), `FavoritesRepository` interface +
-  `MockFavoritesRepository`.
+  `RetrofitFavoritesRepository`.
 
-- Son Güncelleme Tarihi: 13.06.2026
+- Son Güncelleme Tarihi: 19.06.2026
 
 - Uygulama: `ui/favorites/` paketi mevcut Login/Home/Search/Library referans
   implementasyonlarıyla aynı MVI desenini izler. Ekran başlık, favori sayısı, filtre çipleri,
   favori içerik listesi, favoriden kaldırma aksiyonu ve boş liste durumundan oluşur. Veri katmanı
-  `data/favorites/` altında, DI bağlaması `di/FavoritesModule.kt` içinde yer alır. Navigasyonda
-  `LyraNavHost` içindeki Favorites placeholder'ı kaldırılarak `FavoritesRoute()` bağlanmıştır.
+  `data/favorites/` altında, DI bağlaması `di/FavoritesModule.kt` içinde yer alır.
+  `RetrofitFavoritesRepository`, API'da favoriler için ayrı endpoint olmadığı için
+  `SongRepository.getSongs` üzerinden `/api/v1/songs` verisini alır ve `FavoriteItem` modeline
+  dönüştürür. Şarkı item'larının ID değeri gerçek `Song.id` olduğu için Now Playing/ExoPlayer
+  akışına uyumludur. Favoriden kaldırma davranışı backend endpoint'i gelene kadar ekranda lokal
+  kalır.
 
 - Sebep: Mevcut alt gezinme çubuğundaki Favorites sekmesini gerçek MVI ekranına bağlamak;
-  backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
+  mevcut API tasarımında favori endpoint'i olmadığı için şarkı listesinden API uyumlu favori feed'i
+  türetmek ve player'a gönderilen ID'lerin gerçek API song ID'si olmasını sağlamak.
 
 
 ### Bildirimler (Notifications) Ekranı

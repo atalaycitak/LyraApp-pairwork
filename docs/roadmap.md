@@ -67,6 +67,7 @@ Mevcut build durumu:
 - `SongRepository`, `SongApiService` ve `RetrofitSongRepository` eklendi.
 - Home ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
 - Library ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
+- Favorites ekranı `/api/v1/songs` üzerinden türetilen API uyumlu şarkı listesi alıyor.
 - Şarkı tıklanınca `now_playing/{songId}` rotasına gidiliyor.
 - `AudioPlayerManager` ve `PlayerController` ile global player katmanı eklendi.
 - ExoPlayer, `/api/v1/songs/{id}/stream-url` üzerinden alınan imzalı URL ile ses çalıyor.
@@ -83,7 +84,6 @@ Mevcut build durumu:
 
 ### 3.1. API'ye Geçmemiş Ekranlar
 
-- Favorites ekranı hâlâ `MockFavoritesRepository` kullanıyor.
 - Search ekranı hâlâ mock repository deseniyle çalışıyor.
 - Bildirimler ekranı API'da endpoint olmadığı için mock/local repository kullanıyor.
 - Playlist listesi/detayı için API endpointleri mevcut olsa da uygulamadaki playlist repository katmanı
@@ -91,9 +91,9 @@ Mevcut build durumu:
 
 ### 3.2. Favorites API Uyumluluğu
 
-- Favorites içindeki bazı mock item ID'leri gerçek API song ID formatıyla uyumlu değildir.
-- Şarkı item'ı player'a gönderilecekse ID gerçek API'daki `Song.id` olmalıdır.
-- API'da favori ekleme/silme endpoint'i olmadığı için favori kalıcılığı hâlâ gerçek backend davranışı değildir.
+- Favorites şarkı item'ları artık gerçek API'daki `Song.id` değerini kullanır.
+- API'da favori listeleme/ekleme/silme endpoint'i olmadığı için favori kalıcılığı hâlâ gerçek backend davranışı değildir.
+- Favoriden kaldırma davranışı backend endpoint'i gelene kadar ekran içi lokal davranış olarak kalır.
 
 ### 3.3. Player Kapsamı
 
@@ -150,9 +150,9 @@ Amaç: Favorites ekranının player'a gerçek API song ID'leriyle gitmesini sağ
 
 Önerilen işler:
 
-- Mock favorite song item'ları API song modeliyle uyumlu hale getirmek veya API'dan türetmek.
-- Gerçek favori endpoint'i yoksa favori ekleme/silme kalıcılığını kapsam dışı tutmak.
-- Kullanıcıya yanıltıcı kalıcılık hissi veren davranışları netleştirmek.
+- `/api/v1/songs` verisini `FavoriteItem` modeline map etmek. Tamamlandı.
+- Şarkı item'larının player'a gerçek `Song.id` ile gitmesini sağlamak. Tamamlandı.
+- Gerçek favori endpoint'i yoksa favori ekleme/silme kalıcılığını kapsam dışı tutmak. Tamamlandı.
 
 ### Faz 3.5: Bildirim Ayarları
 
@@ -203,14 +203,14 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 
 ## 5. Önerilen Sıradaki Branchler
 
-1. `feature/notifications-screen`
-   - Profile menüsündeki Bildirimler girişini MVI bildirim ayarları ekranına taşır.
-
-2. `feature/favorites-api-alignment`
-   - Favorites ekranını gerçek API song ID'leriyle uyumlu hale getirir.
-
-3. `chore/viewmodel-tests`
+1. `chore/viewmodel-tests`
    - Mevcut MVI ViewModel'ler için temel unit test kapsamı ekler.
+
+2. `feature/search-api-integration`
+   - Search ekranını mock repository'den API arama akışına taşır.
+
+3. `feature/playlist-api-integration`
+   - Playlist liste/detay akışlarını API playlist endpointleriyle uyumlu hale getirir.
 
 ---
 
