@@ -40,6 +40,7 @@ data class LibraryItem(
 )
 
 enum class LibraryItemType {
+    Song,
     Playlist,
     Album,
     Artist,
