@@ -1,26 +1,24 @@
 # LyraApp Yol Haritası
 
 > Bu doküman pair çalışma reposu için mevcut durum, tamamlanan işler ve sonraki geliştirme
-> adımlarını özetler. Kaynaklar: `agents.md`, `docs/decisions.md`, mevcut MVI feature paketleri
-> ve `lyraapp.pdf` tasarım referansı.
+> adımlarını özetler. Kaynaklar: `AGENTS.md`, `docs/decisions.md`, `docs/api/openapi.json`,
+> mevcut MVI feature paketleri ve tasarım referanslarıdır.
 
 ---
 
 ## 1. Mevcut Durum Özeti
 
 Proje Android Jetpack Compose ve Kotlin ile geliştirilen online/offline müzik çalar
-uygulamasıdır. Sunum katmanı MVI mimarisiyle ilerler. Backend REST API sözleşmesi henüz
-bağlanmadığı için veri katmanında repository interface + mock/fake implementasyon deseni
-kullanılmaktadır.
+uygulamasıdır. Sunum katmanı MVI mimarisiyle ilerler. Backend streaming API sözleşmesi
+`docs/api/openapi.json` altında projeye eklenmiştir.
 
 Mevcut build durumu:
 
 - Pair repo local klasörü: `C:\Users\zzeyn\Documents\LyraApp-pairwork`
 - Remote repo: `atalaycitak/LyraApp-pairwork`
 - Ana branch: `main`
-- Son doğrulanan commit: `6564e24`
-- Son doğrulanan build: `.\gradlew.bat build --console=plain --stacktrace`
-- Cihaz doğrulaması: Pixel 5 API 35 üzerinde uygulama çalıştırıldı.
+- Son doğrulanan main commit: `9d97056`
+- Build komutu: `.\gradlew.bat build --console=plain --stacktrace`
 
 ---
 
@@ -36,176 +34,135 @@ Mevcut build durumu:
   - `docs/architecture/mvi-overview.md`
   - `docs/architecture/mvi-contracts.md`
   - `docs/architecture/mvi-viewmodel-rules.md`
-- Mimari kararlar `docs/decisions.md` altında tutulmaya başlandı.
+- Mimari kararlar `docs/decisions.md` altında tutuluyor.
 
-### 2.2. Tasarım Sistemi
+### 2.2. Tasarım Sistemi ve Navigasyon
 
-- Renk sistemi eklendi.
-- Tipografi sistemi eklendi.
-- Uygulama teması `LyraAppTheme` üzerinden yönetiliyor.
-- Material Icons bağımlılığı eklenmeden proje içi `LyraIcons` seti oluşturuldu.
+- Renk sistemi, tipografi sistemi ve `LyraAppTheme` eklendi.
+- Proje içi `LyraIcons` seti oluşturuldu.
+- Bottom navigation bar eklendi.
+- Global mini player eklendi.
+- `Home`, `Search`, `Library`, `Favorites`, `Profile`, `NowPlaying`,
+  `CreatePlaylist` ve `PlaylistDetail` rotaları bağlandı.
 
-### 2.3. Auth Akışı
+### 2.3. Tamamlanan Ekranlar
 
 - Login ekranı MVI ile eklendi.
 - Register ekranı MVI ile eklendi.
-- Auth repository interface ve fake implementasyon eklendi.
-- Auth DI binding eklendi.
-- Login/Register arası navigation effect tabanlı kuruldu.
-
-### 2.4. Ana Akış ve Sekmeler
-
-- Home ekranı MVI ile eklendi.
+- Home ekranı MVI ile eklendi ve şarkı listesi API verisine bağlandı.
 - Search ekranı MVI ile eklendi.
 - Library ekranı MVI ile eklendi.
-- Now Playing ekranı MVI ile eklendi.
+- Favorites ekranı MVI ile eklendi.
+- Profile ekranı MVI ile eklendi.
+- Now Playing ekranı MVI ile eklendi ve ExoPlayer akışına bağlandı.
 - Yeni çalma listesi oluşturma ekranı MVI ile eklendi.
-- Bottom navigation bar eklendi.
-- `Home`, `Search`, `Library`, `Favorites`, `Profile` sekmeleri tanımlandı.
-- `Favorites` ve `Profile` dışındaki ana ekranlar gerçek route'lara bağlandı.
+- Playlist detay ekranı MVI ile eklendi.
 
-### 2.5. Veri Katmanı
+### 2.4. API ve Player Entegrasyonu
 
-Mock/fake repository deseni aşağıdaki feature'larda uygulanmaktadır:
+- `docs/api/openapi.json` projeye eklendi.
+- `docs/api/api-overview.md` ile API özeti oluşturuldu.
+- Retrofit + Gson + OkHttp logging altyapısı eklendi.
+- `SongRepository`, `SongApiService` ve `RetrofitSongRepository` eklendi.
+- Home ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
+- Şarkı tıklanınca `now_playing/{songId}` rotasına gidiliyor.
+- `AudioPlayerManager` ve `PlayerController` ile global player katmanı eklendi.
+- ExoPlayer, `/api/v1/songs/{id}/stream-url` üzerinden alınan imzalı URL ile ses çalıyor.
+- API'da artwork/background alanı olmadığı için `ArtworkPalette` ile ID tabanlı renk çifti üretiliyor.
 
-- `auth`
-- `home`
-- `search`
-- `library`
-- `nowplaying`
-- `playlist`
+### 2.5. Test Kapsamı
 
-Bu yapı backend hazır olduğunda ViewModel ve UI katmanını bozmadan gerçek implementasyona
-geçmeyi amaçlar.
+- Playlist detail ViewModel testi eklendi.
+- Profile ViewModel testi eklendi.
 
 ---
 
 ## 3. Eksik Kapsam
 
-### 3.1. Placeholder Kalan Ekranlar
+### 3.1. API'ye Geçmemiş Ekranlar
 
-Aşağıdaki sekmeler navigation içinde tanımlıdır ancak gerçek MVI feature olarak henüz
-tamamlanmamıştır:
+- Library ekranı hâlâ `MockLibraryRepository` kullanıyor.
+- Favorites ekranı hâlâ `MockFavoritesRepository` kullanıyor.
+- Search ekranı hâlâ mock repository deseniyle çalışıyor.
+- Playlist listesi/detayı için API endpointleri mevcut olsa da uygulamadaki playlist repository katmanı
+  henüz API tasarımına tam taşınmadı.
 
-- `Favorites`
-- `Profile`
+### 3.2. Favorites API Uyumluluğu
 
-Bu ekranlar şu anda `PlaceholderScreen` ile temsil edilmektedir.
+- Favorites içindeki bazı mock item ID'leri gerçek API song ID formatıyla uyumlu değildir.
+- Şarkı item'ı player'a gönderilecekse ID gerçek API'daki `Song.id` olmalıdır.
+- API'da favori ekleme/silme endpoint'i olmadığı için favori kalıcılığı hâlâ gerçek backend davranışı değildir.
 
-### 3.2. Backend Entegrasyonu
+### 3.3. Player Kapsamı
 
-Backend REST API sözleşmesi henüz projeye bağlanmamıştır. Bu nedenle:
+- Temel ExoPlayer çalma, duraklatma ve seek akışı mevcuttur.
+- Kuyruk yönetimi ve sonraki şarkıya geçiş gerçek playlist/song queue mantığına bağlı değildir.
+- Background playback, media session ve notification desteği yoktur.
+- Offline indirme/çalma yoktur.
 
-- DTO modelleri yoktur.
-- API service katmanı yoktur.
-- Repository implementasyonları gerçek ağ çağrısı yapmamaktadır.
-- Auth token/session yönetimi yoktur.
-- Hata modeli ve response mapping standardı netleşmemiştir.
+### 3.4. Görsel İçerik ve Kapaklar
 
-API sözleşmesi gelmeden endpoint, response modeli veya iş kuralı uydurulmamalıdır.
+- API'da artwork/image URL alanı bulunmamaktadır.
+- Kapaklar şu an ID tabanlı deterministik gradyan renkleriyle temsil edilir.
+- Gerçek artwork yükleme için API alanı ve image loading kararı gereklidir.
 
-### 3.3. Gerçek Medya Oynatma
+### 3.5. Test ve Kalite
 
-Now Playing ekranı görsel ve state akışı olarak hazırdır; ancak gerçek player entegrasyonu
-yoktur.
-
-Eksikler:
-
-- Gerçek medya oynatıcı motoru seçimi.
-- Play/pause, seek, next/previous aksiyonlarının player'a bağlanması.
-- Player state'inin ViewModel state'ine aktarılması.
-- Background playback ve notification/media session desteği.
-
-### 3.4. Offline Mod
-
-Uygulama hedefinde offline müzik çalma vardır; ancak bu kapsam henüz teknik olarak
-tamamlanmamıştır.
-
-Eksikler:
-
-- İndirme durumu modeli.
-- Lokal cache veya persistence katmanı.
-- İndirilen içeriklerin Library ekranıyla gerçek entegrasyonu.
-- Offline/online ayrımı.
-- Depolama ve silme akışları.
-
-### 3.5. Görsel İçerik ve Kapaklar
-
-Şu anda album/playlist görselleri gerçek image URL ile değil, gradient placeholder ile
-temsil edilmektedir.
-
-Eksikler:
-
-- Görsel yükleme kütüphanesi kararı.
-- Image URL model alanları.
-- Loading/error placeholder davranışı.
-- PDF tasarım referansıyla birebir görsel kontrol.
-
-### 3.6. Test Kapsamı
-
-Mevcut test kapsamı sınırlıdır. Feature ViewModel testleri ve navigation happy-path testleri
-eklenmelidir.
-
-Eksikler:
-
-- Login ViewModel testleri.
-- Register ViewModel testleri.
-- Library filtreleme testleri.
-- Create Playlist validasyon testleri.
-- Now Playing state testleri.
-- Repository mock davranış testleri.
+- Login ViewModel testi eksiktir.
+- Register ViewModel testi eksiktir.
+- Library filtreleme ve API mapping testleri eksiktir.
+- Favorites state/intent testleri eksiktir.
+- Now Playing / Player state test kapsamı genişletilmelidir.
+- Repository API davranış testleri eksiktir.
 
 ---
 
 ## 4. Önerilen Önceliklendirme
 
-### Faz 1: Placeholder Ekranları Tamamlama
+### Faz 1: Güncel Durumu Temizleme
 
-Amaç: Bottom navigation içindeki tüm sekmeler gerçek MVI feature haline gelsin.
-
-Önerilen işler:
-
-- `Favorites` feature paketi:
-  - `FavoritesContract.kt`
-  - `FavoritesViewModel.kt`
-  - `FavoritesScreen.kt`
-  - `data/favorites/`
-  - `di/FavoritesModule.kt`
-- `Profile` feature paketi:
-  - `ProfileContract.kt`
-  - `ProfileViewModel.kt`
-  - `ProfileScreen.kt`
-  - `data/profile/`
-  - `di/ProfileModule.kt`
-- `LyraNavHost` placeholder bağlantılarının gerçek route'larla değiştirilmesi.
-- `docs/decisions.md` karar kayıtlarının eklenmesi.
-
-### Faz 2: Backend Sözleşmesine Hazırlık
-
-Amaç: Backend geldiğinde mock repository'lerden gerçek repository'lere kontrollü geçiş
-yapılabilsin.
+Amaç: Uygulama metinleri ve dokümantasyon güncel `main` durumuyla uyumlu olsun.
 
 Önerilen işler:
 
-- API response/error standardını beklemek.
-- DTO ve mapper paket yapısını kararlaştırmak.
-- Network katmanı için kütüphane kararı vermek.
-- Auth token/session yönetimi için karar almak.
-- Repository interface'lerini backend sözleşmesiyle karşılaştırmak.
+- Now Playing kullanıcı metinlerinde Türkçe karakter standardını tamamlamak.
+- `docs/roadmap.md` ve `docs/decisions.md` dosyalarını güncel duruma çekmek.
+- Build ve lint çıktısını PR öncesi doğrulamak.
 
-### Faz 3: Gerçek Medya Oynatma
+### Faz 2: Library API Entegrasyonu
 
-Amaç: Now Playing ekranını simülasyondan gerçek player state'ine taşımak.
+Amaç: Library ekranını mock veriden API tabanlı şarkı/playlist verisine taşımak.
 
 Önerilen işler:
 
-- Media3/ExoPlayer kararı.
-- Player controller abstraction.
-- Player state observer.
-- Now Playing ViewModel entegrasyonu.
-- Background playback ve media notification araştırması.
+- `LibraryRepository` için Retrofit tabanlı implementasyon eklemek.
+- `/api/v1/songs` verisini Library item modeline map etmek.
+- API'da background alanı olmadığı için `ArtworkPalette` ile renk üretmek.
+- Şarkı item tıklamasını `NowPlaying` rotasına gerçek `songId` ile bağlamak.
+- Playlist endpointleri gerekiyorsa `/api/v1/playlists` ve `/api/v1/playlists/{id}` tasarımını esas almak.
 
-### Faz 4: Offline Dinleme
+### Faz 3: Favorites API Uyumluluğu
+
+Amaç: Favorites ekranının player'a gerçek API song ID'leriyle gitmesini sağlamak.
+
+Önerilen işler:
+
+- Mock favorite song item'ları API song modeliyle uyumlu hale getirmek veya API'dan türetmek.
+- Gerçek favori endpoint'i yoksa favori ekleme/silme kalıcılığını kapsam dışı tutmak.
+- Kullanıcıya yanıltıcı kalıcılık hissi veren davranışları netleştirmek.
+
+### Faz 4: Player Deneyimini Genişletme
+
+Amaç: Şarkı çalma akışını gerçek kullanım senaryolarına yaklaştırmak.
+
+Önerilen işler:
+
+- Şarkı kuyruğu modeli eklemek.
+- Sonraki/önceki şarkı davranışını gerçek queue üzerinden yönetmek.
+- Media session ve notification araştırması yapmak.
+- Background playback kapsamını planlamak.
+
+### Faz 5: Offline Dinleme
 
 Amaç: Online/offline müzik çalar hedefini gerçek ürün davranışına yaklaştırmak.
 
@@ -217,17 +174,6 @@ Amaç: Online/offline müzik çalar hedefini gerçek ürün davranışına yakla
 - Offline kullanılabilirlik state'i.
 - İndirme/silme happy-path ve hata akışları.
 
-### Faz 5: Görsel ve UX İnce Ayar
-
-Amaç: PDF tasarım referansı ile mevcut ekranları uyumlu hale getirmek.
-
-Önerilen işler:
-
-- PDF referansındaki ekranların tek tek mevcut uygulama ekranlarıyla karşılaştırılması.
-- Spacing, typography ve color uyum kontrolü.
-- Empty/loading/error state standardizasyonu.
-- Gerçek artwork yükleme kararı sonrası görsel alanların güncellenmesi.
-
 ### Faz 6: Test ve Kalite
 
 Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
@@ -235,21 +181,24 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 Önerilen işler:
 
 - ViewModel unit testleri.
-- Repository fake/mock testleri.
+- Repository mapping testleri.
 - Navigation happy-path testleri.
-- Build ve lint kontrolünün PR öncesi zorunlu hale getirilmesi.
+- Build ve lint kontrolünü PR öncesi zorunlu hale getirmek.
 
 ---
 
-## 5. Önerilen İlk Üç Branch
+## 5. Önerilen Sıradaki Branchler
 
-1. `feature/favorites-screen`
-   - Favoriler sekmesini placeholder'dan gerçek MVI ekrana taşır.
+1. `chore/player-text-roadmap-update`
+   - Player ekranı metinlerini ve proje dokümanlarını günceller.
 
-2. `feature/profile-screen`
-   - Profil sekmesini placeholder'dan gerçek MVI ekrana taşır.
+2. `feature/library-api-integration`
+   - Library ekranını API tabanlı şarkı/playlist verisine taşır.
 
-3. `chore/viewmodel-tests`
+3. `feature/favorites-api-alignment`
+   - Favorites ekranını gerçek API song ID'leriyle uyumlu hale getirir.
+
+4. `chore/viewmodel-tests`
    - Mevcut MVI ViewModel'ler için temel unit test kapsamı ekler.
 
 ---
@@ -263,5 +212,6 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 - Co-author veya bot imzası eklenmemelidir.
 - Her feature için önce dosya dökümü ve bağımlılık matrisi sunulmalıdır.
 - Backend sözleşmesi gelmeden API detayı uydurulmamalıdır.
+- Mock veriler API tasarımıyla çelişirse API tasarımı esas alınmalıdır.
 - Yeni ekranlar MVI kurallarına ve Login referansına uygun yazılmalıdır.
 - Kullanıcıya görünen uygulama içi metinlerde Türkçe karakterler korunmalıdır.

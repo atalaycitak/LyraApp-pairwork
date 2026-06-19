@@ -122,18 +122,18 @@
 - Son Güncelleme Tarihi: 18.06.2026
 
 - Uygulama: `ui/nowplaying/` paketi Login/Home referans implementasyonlarıyla aynı MVI desenini
-  izler. `NowPlayingViewModel`, `SongRepository` (Retrofit) uzerinden dogrudan sarki metadatasini
-  ve stream URL'ini ceker; ExoPlayer ile ses akisi saglar. Progress takibi ExoPlayer
-  `Player.Listener` uzerinden 500ms polling ile yapilir. ExoPlayer `NowPlayingModule`'de
-  `@ApplicationContext` ile `@Provides @Singleton` olarak saglanir. `LyraDestination.NowPlaying`
-  ust duzey sekme degildir; alt gezinme cubugu bu ekranda gizlenir.
+  izler. `NowPlayingViewModel`, `SongRepository` (Retrofit) üzerinden doğrudan şarkı metadatasını
+  ve stream URL'ini çeker; ExoPlayer ile ses akışı sağlar. Progress takibi ExoPlayer
+  `Player.Listener` üzerinden 500ms polling ile yapılır. ExoPlayer `NowPlayingModule`'de
+  `@ApplicationContext` ile `@Provides @Singleton` olarak sağlanır. `LyraDestination.NowPlaying`
+  üst düzey sekme değildir; alt gezinme çubuğu bu ekranda gizlenir.
 
-- 18.06.2026 guncellemesi: ExoPlayer entegrasyonu sonrasi `NowPlayingRepository` interface,
-  `MockNowPlayingRepository` ve `NowPlayingModels.kt` (Track, NowPlayingInfo) artik ViewModel
-  tarafindan kullanilmadigindan kaldirildi. `NowPlayingModule` yalnizca ExoPlayer provider'ini
-  icerecek sekilde sadelestirildi.
+- 18.06.2026 güncellemesi: ExoPlayer entegrasyonu sonrası `NowPlayingRepository` interface,
+  `MockNowPlayingRepository` ve `NowPlayingModels.kt` (Track, NowPlayingInfo) artık ViewModel
+  tarafından kullanılmadığından kaldırıldı. `NowPlayingModule` yalnızca ExoPlayer provider'ını
+  içerecek şekilde sadeleştirildi.
 
-- Sebep: Tasarim ekran goruntusune uyum; ExoPlayer ile gercek ses akisi.
+- Sebep: Tasarım ekran görüntüsüne uyum; ExoPlayer ile gerçek ses akışı.
 
 
 ### Kütüphane (Library) Ekranı
@@ -218,23 +218,23 @@
   backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
 
 
-### Olu Kod Temizligi ve MVI Sapmasi Duzenlemesi
+### Ölü Kod Temizliği ve MVI Sapması Düzenlemesi
 
-- Seçim: NowPlayingRepository/MockNowPlayingRepository/NowPlayingModels kaldirildi;
-  PlaylistDetailViewModel'de `MutableSharedFlow` → `Channel` gecisi yapildi.
+- Seçim: NowPlayingRepository/MockNowPlayingRepository/NowPlayingModels kaldırıldı;
+  PlaylistDetailViewModel'de `MutableSharedFlow` → `Channel` geçişi yapıldı.
 
 - Son Güncelleme Tarihi: 18.06.2026
 
 - Uygulama:
-  1. `data/nowplaying/` altindaki `NowPlayingRepository.kt`, `MockNowPlayingRepository.kt`,
+  1. `data/nowplaying/` altındaki `NowPlayingRepository.kt`, `MockNowPlayingRepository.kt`,
      `NowPlayingModels.kt` silindi. `di/NowPlayingModule.kt`'deki ilgili `@Binds` binding'i
-     kaldirildi; modul `abstract class` → `object` donusturuldu.
-  2. `PlaylistDetailViewModel.kt`'de `MutableSharedFlow` + `asSharedFlow()` kaldirilarak
-     MVI standardi olan `Channel(Channel.BUFFERED)` + `receiveAsFlow()` kullanima alindi.
+     kaldırıldı; modül `abstract class` → `object` dönüştürüldü.
+  2. `PlaylistDetailViewModel.kt`'de `MutableSharedFlow` + `asSharedFlow()` kaldırılarak
+     MVI standardı olan `Channel(Channel.BUFFERED)` + `receiveAsFlow()` kullanıma alındı.
 
-- Sebep: ExoPlayer entegrasyonu sonrasi NowPlayingRepository kullanilmiyordu (olu kod).
-  MutableSharedFlow tek seferlik olaylar icin konfigurasyon degisiminde tekrar tetiklenme
-  riski tasir; Channel ise mvi-contracts.md §4 kuralina uygundur.
+- Sebep: ExoPlayer entegrasyonu sonrası NowPlayingRepository kullanılmıyordu (ölü kod).
+  MutableSharedFlow tek seferlik olaylar için konfigürasyon değişiminde tekrar tetiklenme
+  riski taşır; Channel ise mvi-contracts.md §4 kuralına uygundur.
 
 
 ### Kullanıcı Arayüzü Metin Dili
