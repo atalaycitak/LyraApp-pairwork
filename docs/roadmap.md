@@ -17,8 +17,8 @@ Mevcut build durumu:
 - Pair repo local klasörü: `C:\Users\zzeyn\Documents\LyraApp-pairwork`
 - Remote repo: `atalaycitak/LyraApp-pairwork`
 - Ana branch: `main`
-- Son doğrulanan main commit: `67be5ab`
-- Build komutu: `.\gradlew.bat build --console=plain --stacktrace`
+- Son doğrulanan main commit: `43cd255`
+- Build komutu: `.\gradlew.bat build --console=plain --stacktrace --no-daemon`
 
 ---
 
@@ -65,11 +65,13 @@ Mevcut build durumu:
 - `docs/api/api-overview.md` ile API özeti oluşturuldu.
 - Retrofit + Gson + OkHttp logging altyapısı eklendi.
 - `SongRepository`, `SongApiService` ve `RetrofitSongRepository` eklendi.
-- Home ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
+- Home ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi ve `/api/v1/playlists` üzerinden
+  gerçek çalma listesi satırı alıyor.
 - Search ekranı `/api/v1/songs?q=...` üzerinden gerçek şarkı araması yapıyor.
 - Library ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
 - Favorites ekranı `/api/v1/songs` üzerinden türetilen API uyumlu şarkı listesi alıyor.
 - Playlist detay ekranı `/api/v1/playlists/{id}` üzerinden gerçek playlist ve şarkı listesini alıyor.
+- Home ekranındaki playlist kartları gerçek `Playlist.id` ile playlist detay ekranına gidiyor.
 - Create Playlist ekranındaki seçilebilir şarkılar `/api/v1/songs` üzerinden geliyor.
 - Şarkı tıklanınca `now_playing/{songId}` rotasına gidiliyor.
 - `AudioPlayerManager` ve `PlayerController` ile global player katmanı eklendi.
@@ -134,7 +136,7 @@ Amaç: Uygulama metinleri ve dokümantasyon güncel `main` durumuyla uyumlu olsu
 - `docs/roadmap.md` ve `docs/decisions.md` dosyalarını güncel duruma çekmek.
 - Build ve lint çıktısını PR öncesi doğrulamak.
 
-### Faz 2: Library API Entegrasyonu
+### Faz 2: Library API Entegrasyonu (Tamamlandı)
 
 Amaç: Library ekranını mock veriden API tabanlı şarkı/playlist verisine taşımak.
 
@@ -156,7 +158,7 @@ Amaç: Favorites ekranının player'a gerçek API song ID'leriyle gitmesini sağ
 - Şarkı item'larının player'a gerçek `Song.id` ile gitmesini sağlamak. Tamamlandı.
 - Gerçek favori endpoint'i yoksa favori ekleme/silme kalıcılığını kapsam dışı tutmak. Tamamlandı.
 
-### Faz 3.5: Bildirim Ayarları
+### Faz 3.5: Bildirim Ayarları (Tamamlandı)
 
 Amaç: Profile menüsündeki Bildirimler girişini gerçek bir ayar ekranına taşımak.
 
@@ -211,8 +213,8 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 2. `chore/release-readiness`
    - Build, lint, roadmap ve bilinen sınırlamalar dokümanını teslim öncesi netleştirir.
 
-3. `feature/home-playlists-row`
-   - Home ekranındaki playlist satırını `/api/v1/playlists` verisiyle görünür ve tıklanabilir hale getirir.
+3. `feature/player-queue`
+   - Sonraki/önceki şarkı davranışını gerçek kuyruk modeliyle genişletir.
 
 ---
 

@@ -182,6 +182,24 @@
   değiştirildi. ViewModel ve Contract değişmedi (mvi-overview.md §6 prensibiyle uyumlu).
 
 
+### Ana Sayfa Playlist API Entegrasyonu
+
+- Seçim: **Home feed içinde `/api/v1/playlists` kullanımı** - `RetrofitHomeRepository`,
+  mevcut `PlaylistApiService` üzerinden çalma listelerini alır.
+
+- Son Güncelleme Tarihi: 20.06.2026
+
+- Uygulama: Home ekranındaki "Senin için çalma listeleri" satırı artık boş liste dönmez;
+  OpenAPI sözleşmesindeki `GET /api/v1/playlists` yanıtı `PlaylistForYou` modeline map edilir.
+  API'da playlist artwork/background alanı olmadığı için `ArtworkPalette.colorPairForId(playlist.id)`
+  ile deterministik renk çifti üretilir. Playlist kartına tıklanınca MVI akışı
+  `HomeIntent.PlaylistClicked -> HomeEffect.NavigateToPlaylistDetail` üzerinden
+  `playlist_detail/{playlistId}` rotasına gider.
+
+- Sebep: Home ekranındaki playlist alanını mock/boş durumdan çıkarıp yayınlanan backend
+  sözleşmesine bağlamak; kullanıcıyı gerçek playlist detay akışına taşımak.
+
+
 ### ExoPlayer Ses Akışı
 
 - Seçim: **androidx.media3:media3-exoplayer 1.6.1**
