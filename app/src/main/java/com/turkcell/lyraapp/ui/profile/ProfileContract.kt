@@ -20,5 +20,6 @@ sealed interface ProfileIntent {
 }
 
 sealed interface ProfileEffect {
+    data object NavigateToNotifications : ProfileEffect
     data class ShowSnackbar(val message: String) : ProfileEffect
 }

@@ -38,7 +38,7 @@ class ProfileViewModel @Inject constructor(
             ProfileIntent.OnSettingsClick -> sendEffect(ProfileEffect.ShowSnackbar("Ayarlar tıklandı"))
             ProfileIntent.OnAudioQualityClick -> sendEffect(ProfileEffect.ShowSnackbar("Ses kalitesi seçenekleri"))
             ProfileIntent.OnOfflineDownloadClick -> sendEffect(ProfileEffect.ShowSnackbar("Çevrimdışı indirme ayarları"))
-            ProfileIntent.OnNotificationsClick -> sendEffect(ProfileEffect.ShowSnackbar("Bildirim ayarları"))
+            ProfileIntent.OnNotificationsClick -> sendEffect(ProfileEffect.NavigateToNotifications)
             ProfileIntent.OnPrivacyClick -> sendEffect(ProfileEffect.ShowSnackbar("Gizlilik ayarları"))
             ProfileIntent.OnHelpClick -> sendEffect(ProfileEffect.ShowSnackbar("Yardım ve destek"))
         }
