@@ -93,17 +93,17 @@ fun NowPlayingRoute(
 }
 
 /**
- * Now Playing ("Simdi Caliyor") ekrani.
+ * Now Playing ("Şimdi Çalıyor") ekranı.
  *
- * Tamamen durumsuzdur (stateless): durumu [state] uzerinden alir, kullanici
- * etkilesimlerini [onIntent] ile yukari yayimlar. Ekran goruntusune birebir uygun
- * olarak su bolumleri icerir:
- * - Ust bar (chevron + baslik + menu)
- * - Album kapagi (gradyan)
- * - Sarki bilgisi + favori
- * - Ilerleme cubugu
+ * Tamamen durumsuzdur (stateless): durumu [state] üzerinden alır, kullanıcı
+ * etkileşimlerini [onIntent] ile yukarı yayımlar. Ekran görüntüsüne birebir uygun
+ * olarak şu bölümleri içerir:
+ * - Üst bar (chevron + başlık + menü)
+ * - Albüm kapağı (gradyan)
+ * - Şarkı bilgisi + favori
+ * - İlerleme çubuğu
  * - Oynatma kontrolleri
- * - Alt arac cubugu
+ * - Alt araç çubuğu
  */
 @Composable
 fun NowPlayingScreen(
@@ -194,7 +194,7 @@ fun NowPlayingScreen(
     }
 }
 
-/** Ust bar: asagi ok (chevron) + "SIMDI CALIYOR" + playlist adi + uc nokta menu. */
+/** Üst bar: aşağı ok (chevron) + "ŞİMDİ ÇALIYOR" + playlist adı + üç nokta menü. */
 @Composable
 private fun TopBar(
     playlistName: String,
@@ -218,7 +218,7 @@ private fun TopBar(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "SIMDI CALIYOR",
+                text = "ŞİMDİ ÇALIYOR",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -233,10 +233,10 @@ private fun TopBar(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        IconButton(onClick = { /* Menu aksiyonu henuz tanimli degil */ }) {
+        IconButton(onClick = { /* Menü aksiyonu henüz tanımlı değil */ }) {
             Icon(
                 imageVector = LyraIcons.MoreVert,
-                contentDescription = "Menu",
+                contentDescription = "Menü",
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         }
@@ -244,9 +244,9 @@ private fun TopBar(
 }
 
 /**
- * Album kapagi: gradyan arka plan + hafif radyal parlama + konsantrik daire deseni.
+ * Albüm kapağı: gradyan arka plan + hafif radyal parlama + konsantrik daire deseni.
  *
- * Gercek API gorsel URL'si sagladiginda bu composable gorsel yukleyiciyle degistirilir.
+ * Gerçek API görsel URL'si sağladığında bu composable görsel yükleyiciyle değiştirilir.
  */
 @Composable
 private fun AlbumArtwork(
@@ -273,7 +273,7 @@ private fun AlbumArtwork(
     )
 }
 
-/** Sarki basligi + sanatci adi + favori kalp ikonu. */
+/** Şarkı başlığı + sanatçı adı + favori kalp ikonu. */
 @Composable
 private fun TrackInfo(
     title: String,
@@ -313,7 +313,7 @@ private fun TrackInfo(
     }
 }
 
-/** Ilerleme cubugu + sure etiketleri. */
+/** İlerleme çubuğu + süre etiketleri. */
 @Composable
 private fun ProgressSection(
     currentPositionMs: Long,
@@ -355,7 +355,7 @@ private fun ProgressSection(
     }
 }
 
-/** Oynatma kontrolleri: karistir, onceki, oynat/duraklat, sonraki, tekrarla. */
+/** Oynatma kontrolleri: karıştır, önceki, oynat/duraklat, sonraki, tekrarla. */
 @Composable
 private fun PlaybackControls(
     isPlaying: Boolean,
@@ -374,14 +374,14 @@ private fun PlaybackControls(
     ) {
         ControlIcon(
             icon = LyraIcons.Shuffle,
-            contentDescription = "Karistir",
+            contentDescription = "Karıştır",
             tint = if (isShuffleOn) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.onSurfaceVariant,
             onClick = onToggleShuffle,
         )
         ControlIcon(
             icon = LyraIcons.SkipPrevious,
-            contentDescription = "Onceki",
+            contentDescription = "Önceki",
             tint = MaterialTheme.colorScheme.onSurface,
             onClick = onSkipPrevious,
             size = 36,
@@ -407,7 +407,7 @@ private fun PlaybackControls(
     }
 }
 
-/** Buyuk pembe oynat/duraklat butonu. */
+/** Büyük pembe oynat/duraklat butonu. */
 @Composable
 private fun PlayPauseButton(
     isPlaying: Boolean,
@@ -434,7 +434,7 @@ private fun PlayPauseButton(
     }
 }
 
-/** Tekil kontrol ikonu (karistir, onceki, sonraki, tekrarla). */
+/** Tekil kontrol ikonu (karıştır, önceki, sonraki, tekrarla). */
 @Composable
 private fun ControlIcon(
     icon: ImageVector,
@@ -453,7 +453,7 @@ private fun ControlIcon(
     }
 }
 
-/** Alt arac cubugu: kuyruk, arkaplan, sarki sozleri ikonlari. */
+/** Alt araç çubuğu: kuyruk, arka plan, şarkı sözleri ikonları. */
 @Composable
 private fun BottomToolbar() {
     Row(
@@ -463,7 +463,7 @@ private fun BottomToolbar() {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = { /* Kuyruk aksiyonu henuz tanimli degil */ }) {
+        IconButton(onClick = { /* Kuyruk aksiyonu henüz tanımlı değil */ }) {
             Icon(
                 imageVector = LyraIcons.QueueMusic,
                 contentDescription = "Kuyruk",
@@ -478,7 +478,7 @@ private fun BottomToolbar() {
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = { /* Arkaplan aksiyonu henuz tanimli degil */ },
+                    onClick = { /* Arka plan aksiyonu henüz tanımlı değil */ },
                 ),
         ) {
             Icon(
@@ -488,15 +488,15 @@ private fun BottomToolbar() {
                 modifier = Modifier.size(20.dp),
             )
             Text(
-                text = "Arkaplan",
+                text = "Arka plan",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        IconButton(onClick = { /* Sarki sozleri aksiyonu henuz tanimli degil */ }) {
+        IconButton(onClick = { /* Şarkı sözleri aksiyonu henüz tanımlı değil */ }) {
             Icon(
                 imageVector = LyraIcons.Lyrics,
-                contentDescription = "Sarki Sozleri",
+                contentDescription = "Şarkı Sözleri",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(24.dp),
             )
@@ -504,7 +504,7 @@ private fun BottomToolbar() {
     }
 }
 
-/** Milisaniyeyi "m:ss" formatina cevirir. */
+/** Milisaniyeyi "m:ss" formatına çevirir. */
 private fun formatDuration(ms: Long): String {
     val totalSeconds = ms / 1_000
     val minutes = totalSeconds / 60
@@ -516,7 +516,7 @@ private fun formatDuration(ms: Long): String {
 
 private val previewState = NowPlayingUiState(
     trackTitle = "Neon Sokaklar",
-    artistName = "Sehir Isiklari",
+    artistName = "Şehir Işıkları",
     playlistName = "Gece Vardiyasi",
     artworkStartColor = 0xFFD98E4A,
     artworkEndColor = 0xFF8A5526,
