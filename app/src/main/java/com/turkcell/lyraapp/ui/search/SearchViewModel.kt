@@ -38,17 +38,21 @@ class SearchViewModel @Inject constructor(
 
     fun onIntent(intent: SearchIntent) {
         when (intent) {
-            is SearchIntent.QueryChanged -> _uiState.update { it.copy(searchQuery = intent.value) }
+            is SearchIntent.QueryChanged -> {
+                _uiState.update { it.copy(searchQuery = intent.value) }
+                loadFeed(intent.value)
+            }
             is SearchIntent.FilterSelected -> _uiState.update { it.copy(selectedFilterId = intent.filterId) }
-            is SearchIntent.Retry -> loadFeed()
+            is SearchIntent.ResultClicked -> navigateToPlayer(intent.songId)
+            is SearchIntent.Retry -> loadFeed(_uiState.value.searchQuery)
         }
     }
 
-    private fun loadFeed() {
+    private fun loadFeed(query: String? = null) {
         if (_uiState.value.isLoading) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val result = searchRepository.getSearchFeed()
+            val result = searchRepository.getSearchFeed(query)
             _uiState.update { it.copy(isLoading = false) }
             result
                 .onSuccess { feed ->
@@ -56,12 +60,19 @@ class SearchViewModel @Inject constructor(
                         it.copy(
                             filters = feed.filters,
                             genres = feed.genres,
+                            results = feed.results,
                         )
                     }
                 }
                 .onFailure { error ->
                     _effect.send(SearchEffect.ShowError(error.message ?: "Arama ekranı yüklenemedi."))
                 }
+        }
+    }
+
+    private fun navigateToPlayer(songId: String) {
+        viewModelScope.launch {
+            _effect.send(SearchEffect.NavigateToPlayer(songId))
         }
     }
 }

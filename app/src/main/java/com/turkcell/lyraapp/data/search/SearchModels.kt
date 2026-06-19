@@ -23,8 +23,19 @@ data class Genre(
     val artworkEndColor: Long,
 )
 
-/** Repository'den dönen aggregate model: filtreler + türler. */
+/** API'dan gelen sarki arama sonucunun UI tarafinda kullanilan modeli. */
+data class SearchResultItem(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val artworkStartColor: Long,
+    val artworkEndColor: Long,
+    val durationLabel: String,
+)
+
+/** Repository'den donen aggregate model: filtreler + sarki sonuclari. */
 data class SearchFeed(
     val filters: List<SearchFilter>,
     val genres: List<Genre>,
+    val results: List<SearchResultItem> = emptyList(),
 )

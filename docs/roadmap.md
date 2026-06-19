@@ -66,6 +66,7 @@ Mevcut build durumu:
 - Retrofit + Gson + OkHttp logging altyapısı eklendi.
 - `SongRepository`, `SongApiService` ve `RetrofitSongRepository` eklendi.
 - Home ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
+- Search ekranı `/api/v1/songs?q=...` üzerinden gerçek şarkı araması yapıyor.
 - Library ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
 - Favorites ekranı `/api/v1/songs` üzerinden türetilen API uyumlu şarkı listesi alıyor.
 - Şarkı tıklanınca `now_playing/{songId}` rotasına gidiliyor.
@@ -84,7 +85,6 @@ Mevcut build durumu:
 
 ### 3.1. API'ye Geçmemiş Ekranlar
 
-- Search ekranı hâlâ mock repository deseniyle çalışıyor.
 - Bildirimler ekranı API'da endpoint olmadığı için mock/local repository kullanıyor.
 - Playlist listesi/detayı için API endpointleri mevcut olsa da uygulamadaki playlist repository katmanı
   henüz API tasarımına tam taşınmadı.
@@ -203,14 +203,14 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 
 ## 5. Önerilen Sıradaki Branchler
 
-1. `chore/viewmodel-tests`
+1. `feature/playlist-api-integration`
+   - Playlist liste/detay akışlarını API playlist endpointleriyle uyumlu hale getirir.
+
+2. `chore/viewmodel-tests`
    - Mevcut MVI ViewModel'ler için temel unit test kapsamı ekler.
 
-2. `feature/search-api-integration`
-   - Search ekranını mock repository'den API arama akışına taşır.
-
-3. `feature/playlist-api-integration`
-   - Playlist liste/detay akışlarını API playlist endpointleriyle uyumlu hale getirir.
+3. `chore/release-readiness`
+   - Build, lint, roadmap ve bilinen sınırlamalar dokümanını teslim öncesi netleştirir.
 
 ---
 

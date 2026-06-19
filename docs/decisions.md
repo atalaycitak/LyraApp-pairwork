@@ -100,18 +100,20 @@
 ### Arama (Search) Ekranı
 
 - Seçim: **MVI** — `SearchContract.kt` (State + Intent + Effect), `SearchViewModel.kt`,
-  `SearchScreen.kt` (Route/Screen ayrımı), `SearchRepository` interface + `MockSearchRepository`.
+  `SearchScreen.kt` (Route/Screen ayrımı), `SearchRepository` interface +
+  `RetrofitSearchRepository`.
 
-- Son Güncelleme Tarihi: 13.06.2026
+- Son Güncelleme Tarihi: 20.06.2026
 
 - Uygulama: `ui/search/` paketi Login/Home referans implementasyonlarıyla aynı MVI desenini izler.
-  Arama alanı (`OutlinedTextField`), yatay scrollable filtre çipleri (`FilterChip`) ve 2 sütunlu
-  tür kartları grid'i (`Genre` modeli, gradyan arka plan) ekran görüntüsüne birebir uygun
-  olarak tasarlanmıştır. Veri katmanı `data/search/` altında, DI bağlaması `di/SearchModule.kt`
-  içinde yer alır. Navigasyonda `LyraNavHost` içindeki geçici `PlaceholderScreen` kaldırılarak
-  `SearchRoute()` bağlanmıştır.
+  Arama alanı (`OutlinedTextField`), yatay filtre çipleri (`FilterChip`) ve API'dan gelen şarkı
+  sonuçları listesi bulunur. Veri katmanı `data/search/` altında, DI bağlaması
+  `di/SearchModule.kt` içinde yer alır. `RetrofitSearchRepository`, `/api/v1/songs` endpoint'inin
+  `q` parametresini kullanarak şarkı araması yapar. API'da genre endpoint'i olmadığı için sahte
+  tür kartları üretilmez. Sonuca tıklanınca gerçek `Song.id` ile Now Playing ekranına gidilir.
 
-- Sebep: Tasarım ekran görüntüsüne uyum; mevcut MVI mimarisi ve stub repository deseniyle tutarlılık.
+- Sebep: API sözleşmesinde arama `/api/v1/songs?q=...` üzerinden sağlandığı için Search ekranını
+  mock genre verisi yerine gerçek şarkı arama akışına taşımak.
 
 
 ### Now Playing (Şimdi Çalıyor) Ekranı

@@ -111,7 +111,15 @@ fun LyraNavHost(
                     },
                 )
             }
-            composable(LyraDestination.Search.route) { SearchRoute() }
+            composable(LyraDestination.Search.route) {
+                SearchRoute(
+                    onNavigateToPlayer = { songId ->
+                        navController.navigate(LyraDestination.nowPlayingRoute(songId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
             composable(LyraDestination.Library.route) {
                 LibraryRoute(
                     onNavigateToCreatePlaylist = {

@@ -12,7 +12,7 @@ import javax.inject.Inject
  */
 class MockSearchRepository @Inject constructor() : SearchRepository {
 
-    override suspend fun getSearchFeed(): Result<SearchFeed> {
+    override suspend fun getSearchFeed(query: String?): Result<SearchFeed> {
         delay(NETWORK_DELAY_MS)
         return Result.success(
             SearchFeed(

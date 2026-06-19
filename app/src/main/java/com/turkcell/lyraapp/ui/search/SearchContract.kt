@@ -2,6 +2,7 @@ package com.turkcell.lyraapp.ui.search
 
 import com.turkcell.lyraapp.data.search.Genre
 import com.turkcell.lyraapp.data.search.SearchFilter
+import com.turkcell.lyraapp.data.search.SearchResultItem
 
 /**
  * Arama ekranının MVI sözleşmesi: UiState + Intent + Effect (bkz. mvi-contracts.md).
@@ -15,6 +16,7 @@ data class SearchUiState(
     val selectedFilterId: String = "filter-all",
     val filters: List<SearchFilter> = emptyList(),
     val genres: List<Genre> = emptyList(),
+    val results: List<SearchResultItem> = emptyList(),
 )
 
 /**
@@ -27,6 +29,8 @@ sealed interface SearchIntent {
     /** Filtre çipine tıklandı. */
     data class FilterSelected(val filterId: String) : SearchIntent
 
+    data class ResultClicked(val songId: String) : SearchIntent
+
     /** Besleme yüklemesi başarısız olduğunda kullanıcı yeniden dener. */
     data object Retry : SearchIntent
 }
@@ -36,5 +40,6 @@ sealed interface SearchIntent {
  * böylece konfigürasyon değişiminde tekrar tetiklenmez.
  */
 sealed interface SearchEffect {
+    data class NavigateToPlayer(val songId: String) : SearchEffect
     data class ShowError(val message: String) : SearchEffect
 }
