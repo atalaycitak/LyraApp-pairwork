@@ -17,7 +17,7 @@ Mevcut build durumu:
 - Pair repo local klasörü: `C:\Users\zzeyn\Documents\LyraApp-pairwork`
 - Remote repo: `atalaycitak/LyraApp-pairwork`
 - Ana branch: `main`
-- Son doğrulanan main commit: `9d97056`
+- Son doğrulanan main commit: `67be5ab`
 - Build komutu: `.\gradlew.bat build --console=plain --stacktrace`
 
 ---
@@ -42,7 +42,7 @@ Mevcut build durumu:
 - Proje içi `LyraIcons` seti oluşturuldu.
 - Bottom navigation bar eklendi.
 - Global mini player eklendi.
-- `Home`, `Search`, `Library`, `Favorites`, `Profile`, `NowPlaying`,
+- `Home`, `Search`, `Library`, `Favorites`, `Profile`, `Notifications`, `NowPlaying`,
   `CreatePlaylist` ve `PlaylistDetail` rotaları bağlandı.
 
 ### 2.3. Tamamlanan Ekranlar
@@ -54,6 +54,7 @@ Mevcut build durumu:
 - Library ekranı MVI ile eklendi.
 - Favorites ekranı MVI ile eklendi.
 - Profile ekranı MVI ile eklendi.
+- Bildirim ayarları ekranı MVI ile eklendi ve Profile menüsüne bağlandı.
 - Now Playing ekranı MVI ile eklendi ve ExoPlayer akışına bağlandı.
 - Yeni çalma listesi oluşturma ekranı MVI ile eklendi.
 - Playlist detay ekranı MVI ile eklendi.
@@ -65,6 +66,7 @@ Mevcut build durumu:
 - Retrofit + Gson + OkHttp logging altyapısı eklendi.
 - `SongRepository`, `SongApiService` ve `RetrofitSongRepository` eklendi.
 - Home ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
+- Library ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
 - Şarkı tıklanınca `now_playing/{songId}` rotasına gidiliyor.
 - `AudioPlayerManager` ve `PlayerController` ile global player katmanı eklendi.
 - ExoPlayer, `/api/v1/songs/{id}/stream-url` üzerinden alınan imzalı URL ile ses çalıyor.
@@ -81,9 +83,9 @@ Mevcut build durumu:
 
 ### 3.1. API'ye Geçmemiş Ekranlar
 
-- Library ekranı hâlâ `MockLibraryRepository` kullanıyor.
 - Favorites ekranı hâlâ `MockFavoritesRepository` kullanıyor.
 - Search ekranı hâlâ mock repository deseniyle çalışıyor.
+- Bildirimler ekranı API'da endpoint olmadığı için mock/local repository kullanıyor.
 - Playlist listesi/detayı için API endpointleri mevcut olsa da uygulamadaki playlist repository katmanı
   henüz API tasarımına tam taşınmadı.
 
@@ -97,7 +99,7 @@ Mevcut build durumu:
 
 - Temel ExoPlayer çalma, duraklatma ve seek akışı mevcuttur.
 - Kuyruk yönetimi ve sonraki şarkıya geçiş gerçek playlist/song queue mantığına bağlı değildir.
-- Background playback, media session ve notification desteği yoktur.
+- Background playback, media session ve media playback notification desteği yoktur.
 - Offline indirme/çalma yoktur.
 
 ### 3.4. Görsel İçerik ve Kapaklar
@@ -112,6 +114,7 @@ Mevcut build durumu:
 - Register ViewModel testi eksiktir.
 - Library filtreleme ve API mapping testleri eksiktir.
 - Favorites state/intent testleri eksiktir.
+- Notifications state/intent testleri eksiktir.
 - Now Playing / Player state test kapsamı genişletilmelidir.
 - Repository API davranış testleri eksiktir.
 
@@ -151,6 +154,17 @@ Amaç: Favorites ekranının player'a gerçek API song ID'leriyle gitmesini sağ
 - Gerçek favori endpoint'i yoksa favori ekleme/silme kalıcılığını kapsam dışı tutmak.
 - Kullanıcıya yanıltıcı kalıcılık hissi veren davranışları netleştirmek.
 
+### Faz 3.5: Bildirim Ayarları
+
+Amaç: Profile menüsündeki Bildirimler girişini gerçek bir ayar ekranına taşımak.
+
+Önerilen işler:
+
+- `NotificationsRepository` için mock/local implementasyon eklemek.
+- Bildirim tercihlerini MVI ekranında switch kontrolleriyle yönetmek.
+- Profile `Bildirimler` tıklamasını `notifications` rotasına bağlamak.
+- API'da bildirim endpoint'i olmadığını dokümantasyonda belirtmek.
+
 ### Faz 4: Player Deneyimini Genişletme
 
 Amaç: Şarkı çalma akışını gerçek kullanım senaryolarına yaklaştırmak.
@@ -189,16 +203,13 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 
 ## 5. Önerilen Sıradaki Branchler
 
-1. `chore/player-text-roadmap-update`
-   - Player ekranı metinlerini ve proje dokümanlarını günceller.
+1. `feature/notifications-screen`
+   - Profile menüsündeki Bildirimler girişini MVI bildirim ayarları ekranına taşır.
 
-2. `feature/library-api-integration`
-   - Library ekranını API tabanlı şarkı/playlist verisine taşır.
-
-3. `feature/favorites-api-alignment`
+2. `feature/favorites-api-alignment`
    - Favorites ekranını gerçek API song ID'leriyle uyumlu hale getirir.
 
-4. `chore/viewmodel-tests`
+3. `chore/viewmodel-tests`
    - Mevcut MVI ViewModel'ler için temel unit test kapsamı ekler.
 
 ---

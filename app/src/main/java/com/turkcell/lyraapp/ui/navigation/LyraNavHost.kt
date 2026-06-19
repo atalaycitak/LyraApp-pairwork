@@ -19,6 +19,7 @@ import com.turkcell.lyraapp.ui.auth.register.RegisterRoute
 import com.turkcell.lyraapp.ui.favorites.FavoritesRoute
 import com.turkcell.lyraapp.ui.home.HomeRoute
 import com.turkcell.lyraapp.ui.library.LibraryRoute
+import com.turkcell.lyraapp.ui.notifications.NotificationsRoute
 import com.turkcell.lyraapp.ui.nowplaying.NowPlayingRoute
 import com.turkcell.lyraapp.ui.search.SearchRoute
 import com.turkcell.lyraapp.ui.playlist.create.CreatePlaylistRoute
@@ -144,7 +145,20 @@ fun LyraNavHost(
                     }
                 ) 
             }
-            composable(LyraDestination.Profile.route) { com.turkcell.lyraapp.ui.profile.ProfileRoute() }
+            composable(LyraDestination.Profile.route) {
+                com.turkcell.lyraapp.ui.profile.ProfileRoute(
+                    onNavigateToNotifications = {
+                        navController.navigate(LyraDestination.Notifications.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(LyraDestination.Notifications.route) {
+                NotificationsRoute(
+                    onNavigateBack = { navController.popBackStack() },
+                )
+            }
             composable(
                 route = LyraDestination.NowPlaying.route,
                 arguments = listOf(

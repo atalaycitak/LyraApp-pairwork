@@ -23,6 +23,7 @@ import com.turkcell.lyraapp.ui.icons.LyraIcons
 
 @Composable
 fun ProfileRoute(
+    onNavigateToNotifications: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -31,6 +32,7 @@ fun ProfileRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
+                ProfileEffect.NavigateToNotifications -> onNavigateToNotifications()
                 is ProfileEffect.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(effect.message)
                 }

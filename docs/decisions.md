@@ -220,6 +220,25 @@
   backend hazır olana kadar stub repository deseniyle geliştirmeyi sürdürmek.
 
 
+### Bildirimler (Notifications) Ekranı
+
+- Seçim: **MVI** - `NotificationsContract.kt` (State + Intent + Effect),
+  `NotificationsViewModel.kt`, `NotificationsScreen.kt` (Route/Screen ayrımı),
+  `NotificationsRepository` interface + `MockNotificationsRepository`.
+
+- Son Güncelleme Tarihi: 19.06.2026
+
+- Uygulama: `ui/notifications/` paketi mevcut MVI feature desenini izler. Ekran Profile
+  menüsündeki `Bildirimler` satırından açılır; `ProfileViewModel`, snackbar yerine
+  `ProfileEffect.NavigateToNotifications` effect'i üretir ve `LyraNavHost` bu effect'i
+  `notifications` rotasına bağlar. Bildirim tercihleri switch kontrolleriyle yönetilir.
+  API sözleşmesinde bildirim endpoint'i bulunmadığı için veri katmanı `data/notifications/`
+  altında local mock repository ile sağlanır.
+
+- Sebep: Profile ekranındaki bildirim girişini placeholder/snackbar davranışından gerçek ayar
+  ekranına taşımak; backend desteği gelene kadar MVI ve repository soyutlamasını korumak.
+
+
 ### Ölü Kod Temizliği ve MVI Sapması Düzenlemesi
 
 - Seçim: NowPlayingRepository/MockNowPlayingRepository/NowPlayingModels kaldırıldı;
