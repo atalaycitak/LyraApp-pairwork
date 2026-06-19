@@ -188,7 +188,7 @@ private fun FavoritesHeader(count: Int) {
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "Beğenilen şarkı, albüm ve listelerini tek ekranda takip et.",
+            text = "API'daki şarkılardan türetilen favori listen burada görünür.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -369,13 +369,11 @@ private val previewState = FavoritesUiState(
     filters = listOf(
         FavoriteFilter("filter-all", "Tümü", null),
         FavoriteFilter("filter-songs", "Şarkılar", FavoriteItemType.Song),
-        FavoriteFilter("filter-albums", "Albümler", FavoriteItemType.Album),
-        FavoriteFilter("filter-playlists", "Listeler", FavoriteItemType.Playlist),
     ),
     items = listOf(
-        FavoriteItem("favorite-1", "Gece Sürüşü", "Mira - Neon Hatıralar", FavoriteItemType.Song, 0xFF8B6FB8, 0xFF4A3D6B, "3:42", true),
-        FavoriteItem("favorite-2", "Derin Mavi", "Okyanus", FavoriteItemType.Album, 0xFF6FBF5A, 0xFF356B2A, "12 şarkı", true),
-        FavoriteItem("favorite-3", "Sabah Kahvesi", "Lyra Mix - 30 şarkı", FavoriteItemType.Playlist, 0xFF7C83D9, 0xFF3E4486, "1 sa 48 dk", false),
+        FavoriteItem("s_neon-tide", "Neon Tide", "Aurora Drift", FavoriteItemType.Song, 0xFF8B6FB8, 0xFF4A3D6B, "3:42", false),
+        FavoriteItem("s_midnight-road", "Midnight Road", "City Lights", FavoriteItemType.Song, 0xFF6FBF5A, 0xFF356B2A, "4:08", false),
+        FavoriteItem("s_sunset-loop", "Sunset Loop", "Mira", FavoriteItemType.Song, 0xFF7C83D9, 0xFF3E4486, "2:58", false),
     ),
 )
 
