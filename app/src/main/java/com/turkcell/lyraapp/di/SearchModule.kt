@@ -1,6 +1,6 @@
 package com.turkcell.lyraapp.di
 
-import com.turkcell.lyraapp.data.search.MockSearchRepository
+import com.turkcell.lyraapp.data.search.RetrofitSearchRepository
 import com.turkcell.lyraapp.data.search.SearchRepository
 import dagger.Binds
 import dagger.Module
@@ -11,8 +11,8 @@ import javax.inject.Singleton
 /**
  * Search feature'ının repository bağlamaları.
  *
- * Backend hazır olmadığından [SearchRepository], MOCK implementasyona ([MockSearchRepository])
- * bağlanır. Gerçek API geldiğinde yalnızca bu bağlamanın hedefi değiştirilir.
+ * [SearchRepository], `/api/v1/songs` uzerinden arama yapan [RetrofitSearchRepository]
+ * implementasyonuna baglanir.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -20,5 +20,5 @@ abstract class SearchModule {
 
     @Binds
     @Singleton
-    abstract fun bindSearchRepository(impl: MockSearchRepository): SearchRepository
+    abstract fun bindSearchRepository(impl: RetrofitSearchRepository): SearchRepository
 }

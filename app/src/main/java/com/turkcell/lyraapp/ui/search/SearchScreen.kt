@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.ui.search
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.turkcell.lyraapp.data.search.Genre
 import com.turkcell.lyraapp.data.search.SearchFilter
+import com.turkcell.lyraapp.data.search.SearchResultItem
 import com.turkcell.lyraapp.ui.theme.LyraAppTheme
 
 /**
@@ -57,6 +59,7 @@ import com.turkcell.lyraapp.ui.theme.LyraAppTheme
  */
 @Composable
 fun SearchRoute(
+    onNavigateToPlayer: (songId: String) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
@@ -66,6 +69,7 @@ fun SearchRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
+                is SearchEffect.NavigateToPlayer -> onNavigateToPlayer(effect.songId)
                 is SearchEffect.ShowError -> {
                     val result = snackbarHostState.showSnackbar(
                         message = effect.message,
@@ -109,7 +113,7 @@ fun SearchScreen(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        if (state.isLoading && state.genres.isEmpty()) {
+        if (state.isLoading && state.results.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -139,8 +143,13 @@ fun SearchScreen(
                         onFilterSelected = { onIntent(SearchIntent.FilterSelected(it)) },
                     )
                 }
-                item { BrowseGenresHeader() }
-                item { GenreGrid(genres = state.genres) }
+                item { SearchResultsHeader(count = state.results.size) }
+                item {
+                    SearchResultsList(
+                        results = state.results,
+                        onResultClick = { onIntent(SearchIntent.ResultClicked(it)) },
+                    )
+                }
             }
         }
     }
@@ -169,7 +178,7 @@ private fun SearchBar(
         onValueChange = onQueryChanged,
         placeholder = {
             Text(
-                text = "Sarki, sanatci veya album",
+                text = "Şarkı, sanatçı veya albüm",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -249,15 +258,113 @@ private fun FilterChipsRow(
     }
 }
 
-/** "Turlere goz at" bolum basligi. */
+/** Arama sonuclari bolum basligi. */
 @Composable
-private fun BrowseGenresHeader() {
-    Text(
-        text = "Turlere goz at",
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(horizontal = 20.dp),
+private fun SearchResultsHeader(count: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Şarkılar",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = "$count sonuç",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun SearchResultsList(
+    results: List<SearchResultItem>,
+    onResultClick: (String) -> Unit,
+) {
+    if (results.isEmpty()) {
+        Text(
+            text = "Sonuç bulunamadı.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+        )
+        return
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        results.forEach { result ->
+            SearchResultRow(
+                result = result,
+                onClick = { onResultClick(result.id) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchResultRow(
+    result: SearchResultItem,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Artwork(
+            startColor = result.artworkStartColor,
+            endColor = result.artworkEndColor,
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        )
+        Spacer(Modifier.size(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = result.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = result.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(
+            text = result.durationLabel,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun Artwork(
+    startColor: Long,
+    endColor: Long,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(Brush.linearGradient(listOf(Color(startColor), Color(endColor))))
+            .background(
+                Brush.radialGradient(
+                    listOf(Color.White.copy(alpha = 0.16f), Color.Transparent),
+                ),
+            ),
     )
 }
 
@@ -326,9 +433,12 @@ private val previewState = SearchUiState(
     selectedFilterId = "filter-all",
     filters = listOf(
         SearchFilter("filter-all", "Hepsi"),
-        SearchFilter("filter-pop", "Pop"),
-        SearchFilter("filter-electronic", "Elektronik"),
-        SearchFilter("filter-acoustic", "Akustik"),
+        SearchFilter("filter-songs", "Şarkılar"),
+    ),
+    results = listOf(
+        SearchResultItem("s_neon-tide", "Neon Tide", "Aurora Drift - City Lights", 0xFF3DC5B0, 0xFF1A8A7A, "3:20"),
+        SearchResultItem("s_midnight-road", "Midnight Road", "City Lights", 0xFF9B8EC4, 0xFF6B5FB8, "4:08"),
+        SearchResultItem("s_sunset-loop", "Sunset Loop", "Mira", 0xFFC488C0, 0xFF8B5A87, "2:58"),
     ),
     genres = listOf(
         Genre("genre-pop", "Pop", 0xFF3DC5B0, 0xFF1A8A7A),
