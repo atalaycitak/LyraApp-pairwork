@@ -7,8 +7,7 @@ import com.turkcell.lyraapp.data.home.RecentlyPlayed
 /**
  * Home ekranının MVI sözleşmesi: UiState + Intent + Effect (bkz. mvi-contracts.md).
  *
- * Bu iterasyonda kartlara tıklama ve "Tümü" davranışsızdır (hedef ekranlar henüz yok);
- * bu nedenle yalnızca yükleme akışına ait niyetler tanımlıdır.
+ * Kart tıklamaları tek seferlik navigation effect'leriyle Route katmanına iletilir.
  */
 data class HomeUiState(
     val isLoading: Boolean = false,
@@ -25,6 +24,9 @@ sealed interface HomeIntent {
 
     /** Kullanıcı bir şarkı kartına (QuickPick veya RecentlyPlayed) tıkladı. */
     data class SongClicked(val songId: String) : HomeIntent
+
+    /** Kullanıcı bir çalma listesi kartına tıkladı. */
+    data class PlaylistClicked(val playlistId: String) : HomeIntent
 }
 
 sealed interface HomeEffect {
@@ -32,5 +34,8 @@ sealed interface HomeEffect {
 
     /** NowPlaying ekranına geçiş tetiklenir; [songId] navArgument olarak iletilir. */
     data class NavigateToNowPlaying(val songId: String) : HomeEffect
+
+    /** PlaylistDetail ekranına geçiş tetiklenir; [playlistId] navArgument olarak iletilir. */
+    data class NavigateToPlaylistDetail(val playlistId: String) : HomeEffect
 }
 

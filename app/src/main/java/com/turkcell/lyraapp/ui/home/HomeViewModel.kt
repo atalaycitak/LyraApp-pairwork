@@ -43,6 +43,9 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.SongClicked -> viewModelScope.launch {
                 _effect.send(HomeEffect.NavigateToNowPlaying(intent.songId))
             }
+            is HomeIntent.PlaylistClicked -> viewModelScope.launch {
+                _effect.send(HomeEffect.NavigateToPlaylistDetail(intent.playlistId))
+            }
         }
     }
 

@@ -61,6 +61,7 @@ import com.turkcell.lyraapp.ui.theme.LyraAppTheme
 fun HomeRoute(
     modifier: Modifier = Modifier,
     onNavigateToNowPlaying: (songId: String) -> Unit = {},
+    onNavigateToPlaylistDetail: (playlistId: String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -79,6 +80,7 @@ fun HomeRoute(
                     }
                 }
                 is HomeEffect.NavigateToNowPlaying -> onNavigateToNowPlaying(effect.songId)
+                is HomeEffect.NavigateToPlaylistDetail -> onNavigateToPlaylistDetail(effect.playlistId)
             }
         }
     }
@@ -131,7 +133,12 @@ fun HomeScreen(
                 item { SectionHeader(title = "Son çalınanlar", trailingText = "Tümü") }
                 item { RecentlyPlayedRow(items = state.recentlyPlayed, onSongClick = { id -> onIntent(HomeIntent.SongClicked(id)) }) }
                 item { SectionHeader(title = "Senin için çalma listeleri") }
-                item { PlaylistsForYouRow(items = state.playlistsForYou) }
+                item {
+                    PlaylistsForYouRow(
+                        items = state.playlistsForYou,
+                        onPlaylistClick = { id -> onIntent(HomeIntent.PlaylistClicked(id)) },
+                    )
+                }
             }
         }
     }
@@ -330,13 +337,20 @@ private fun RecentlyPlayedRow(
 
 /** "Senin için çalma listeleri" yatay scrollable büyük kart listesi. */
 @Composable
-private fun PlaylistsForYouRow(items: List<PlaylistForYou>) {
+private fun PlaylistsForYouRow(
+    items: List<PlaylistForYou>,
+    onPlaylistClick: (playlistId: String) -> Unit,
+) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         items(items, key = { it.id }) { item ->
-            Column(modifier = Modifier.width(170.dp)) {
+            Column(
+                modifier = Modifier
+                    .width(170.dp)
+                    .clickable { onPlaylistClick(item.id) },
+            ) {
                 Artwork(
                     startColor = item.artworkStartColor,
                     endColor = item.artworkEndColor,

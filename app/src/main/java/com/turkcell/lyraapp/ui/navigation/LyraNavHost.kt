@@ -109,6 +109,11 @@ fun LyraNavHost(
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToPlaylistDetail = { playlistId ->
+                        navController.navigate(LyraDestination.playlistDetailRoute(playlistId)) {
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
             composable(LyraDestination.Search.route) {

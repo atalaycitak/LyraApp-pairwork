@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.data.home
 
 import com.turkcell.lyraapp.data.common.ArtworkPalette
+import com.turkcell.lyraapp.data.playlist.PlaylistApiService
 import com.turkcell.lyraapp.data.song.SongRepository
 import javax.inject.Inject
 
@@ -13,15 +14,17 @@ import javax.inject.Inject
  *
  * - [QuickPick]: ilk 6 şarkı (grid görünümü).
  * - [RecentlyPlayed]: tüm şarkılar (sanatçı adı subtitle olarak kullanılır).
- * - [PlaylistsForYou]: bu iterasyonda boş liste; playlist entegrasyonu ayrı iterasyonda.
+ * - [PlaylistsForYou]: API'daki çalma listeleri.
  */
 class RetrofitHomeRepository @Inject constructor(
     private val songRepository: SongRepository,
+    private val playlistApiService: PlaylistApiService,
 ) : HomeRepository {
 
     override suspend fun getHomeFeed(): Result<HomeFeed> = runCatching {
-        val response = songRepository.getSongs(limit = 50).getOrThrow()
+        val response = songRepository.getSongs(limit = SONG_LIMIT).getOrThrow()
         val songs = response.data
+        val playlists = playlistApiService.getPlaylists().data
 
         val quickPicks = songs.take(6).map { song ->
             val (start, end) = ArtworkPalette.colorPairForId(song.id)
@@ -44,11 +47,26 @@ class RetrofitHomeRepository @Inject constructor(
             )
         }
 
+        val playlistsForYou = playlists.take(PLAYLIST_LIMIT).map { playlist ->
+            val (start, end) = ArtworkPalette.colorPairForId(playlist.id)
+            PlaylistForYou(
+                id = playlist.id,
+                title = playlist.name,
+                artworkStartColor = start,
+                artworkEndColor = end,
+            )
+        }
+
         HomeFeed(
             userInitials = "",
             quickPicks = quickPicks,
             recentlyPlayed = recentlyPlayed,
-            playlistsForYou = emptyList(),
+            playlistsForYou = playlistsForYou,
         )
+    }
+
+    private companion object {
+        const val SONG_LIMIT = 50
+        const val PLAYLIST_LIMIT = 10
     }
 }
