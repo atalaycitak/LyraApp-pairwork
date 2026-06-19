@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.di
 
 import com.turkcell.lyraapp.data.song.SongApiService
+import com.turkcell.lyraapp.data.playlist.PlaylistApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,4 +53,9 @@ object NetworkModule {
     @Singleton
     fun provideSongApiService(retrofit: Retrofit): SongApiService =
         retrofit.create(SongApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun providePlaylistApiService(retrofit: Retrofit): PlaylistApiService =
+        retrofit.create(PlaylistApiService::class.java)
 }

@@ -69,6 +69,8 @@ Mevcut build durumu:
 - Search ekranı `/api/v1/songs?q=...` üzerinden gerçek şarkı araması yapıyor.
 - Library ekranı `/api/v1/songs` üzerinden gerçek şarkı listesi alıyor.
 - Favorites ekranı `/api/v1/songs` üzerinden türetilen API uyumlu şarkı listesi alıyor.
+- Playlist detay ekranı `/api/v1/playlists/{id}` üzerinden gerçek playlist ve şarkı listesini alıyor.
+- Create Playlist ekranındaki seçilebilir şarkılar `/api/v1/songs` üzerinden geliyor.
 - Şarkı tıklanınca `now_playing/{songId}` rotasına gidiliyor.
 - `AudioPlayerManager` ve `PlayerController` ile global player katmanı eklendi.
 - ExoPlayer, `/api/v1/songs/{id}/stream-url` üzerinden alınan imzalı URL ile ses çalıyor.
@@ -86,8 +88,8 @@ Mevcut build durumu:
 ### 3.1. API'ye Geçmemiş Ekranlar
 
 - Bildirimler ekranı API'da endpoint olmadığı için mock/local repository kullanıyor.
-- Playlist listesi/detayı için API endpointleri mevcut olsa da uygulamadaki playlist repository katmanı
-  henüz API tasarımına tam taşınmadı.
+- API'da playlist oluşturma/güncelleme/silme endpoint'i olmadığı için create playlist kaydetme
+  davranışı lokal validasyonla sınırlıdır.
 
 ### 3.2. Favorites API Uyumluluğu
 
@@ -203,14 +205,14 @@ Amaç: Feature geliştirmelerinde regresyon riskini azaltmak.
 
 ## 5. Önerilen Sıradaki Branchler
 
-1. `feature/playlist-api-integration`
-   - Playlist liste/detay akışlarını API playlist endpointleriyle uyumlu hale getirir.
-
-2. `chore/viewmodel-tests`
+1. `chore/viewmodel-tests`
    - Mevcut MVI ViewModel'ler için temel unit test kapsamı ekler.
 
-3. `chore/release-readiness`
+2. `chore/release-readiness`
    - Build, lint, roadmap ve bilinen sınırlamalar dokümanını teslim öncesi netleştirir.
+
+3. `feature/home-playlists-row`
+   - Home ekranındaki playlist satırını `/api/v1/playlists` verisiyle görünür ve tıklanabilir hale getirir.
 
 ---
 

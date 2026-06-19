@@ -1,7 +1,7 @@
 package com.turkcell.lyraapp.di
 
-import com.turkcell.lyraapp.data.playlist.MockPlaylistRepository
 import com.turkcell.lyraapp.data.playlist.PlaylistRepository
+import com.turkcell.lyraapp.data.playlist.RetrofitPlaylistRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,6 +15,6 @@ abstract class PlaylistModule {
     @Binds
     @Singleton
     abstract fun bindPlaylistRepository(
-        impl: MockPlaylistRepository
+        impl: RetrofitPlaylistRepository
     ): PlaylistRepository
 }
