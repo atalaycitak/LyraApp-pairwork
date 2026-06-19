@@ -49,7 +49,7 @@ class PlaylistDetailViewModel @Inject constructor(
                 },
                 onFailure = { error ->
                     _uiState.update { it.copy(isLoading = false) }
-                    sendEffect(PlaylistDetailEffect.ShowSnackbar(error.message ?: "Bilinmeyen bir hata oluştu"))
+                    sendEffect(PlaylistDetailEffect.ShowSnackbar(error.message ?: "Çalma listesi yüklenemedi."))
                 }
             )
         }

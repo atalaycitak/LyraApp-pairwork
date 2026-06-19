@@ -227,6 +227,27 @@
   türetmek ve player'a gönderilen ID'lerin gerçek API song ID'si olmasını sağlamak.
 
 
+### Çalma Listeleri (Playlist) API Entegrasyonu
+
+- Seçim: **Retrofit tabanlı playlist repository** - `PlaylistApiService`, `PlaylistApiModels.kt`,
+  `RetrofitPlaylistRepository`.
+
+- Son Güncelleme Tarihi: 20.06.2026
+
+- Uygulama: `PlaylistApiService`, OpenAPI sözleşmesindeki `GET /api/v1/playlists` ve
+  `GET /api/v1/playlists/{id}` endpointlerini tanımlar. `RetrofitPlaylistRepository`,
+  `getPlaylistDetail()` çağrısında API'dan gelen playlist ve sıralı şarkı listesini
+  `PlaylistDetailModel` içine map eder. Detay ekranındaki şarkı ID'leri gerçek `Song.id`
+  değeridir; bu sayede şarkıya tıklanınca Now Playing/ExoPlayer akışına doğru ID gider.
+  `getAvailableSongs()` create playlist ekranı için `SongRepository.getSongs()` ile API şarkılarını
+  getirir. API'da playlist oluşturma endpoint'i olmadığı için `createPlaylist()` yalnızca lokal
+  validasyon ve başarılı dönüş davranışı sağlar.
+
+- Sebep: API'da playlist okuma endpointleri hazırdır; detay ekranını mock veriden gerçek playlist
+  verisine taşımak ve create playlist ekranındaki şarkı seçimlerini gerçek API song ID'leriyle
+  uyumlu hale getirmek.
+
+
 ### Bildirimler (Notifications) Ekranı
 
 - Seçim: **MVI** - `NotificationsContract.kt` (State + Intent + Effect),

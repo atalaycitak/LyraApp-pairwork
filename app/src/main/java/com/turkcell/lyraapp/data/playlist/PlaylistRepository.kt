@@ -2,6 +2,9 @@ package com.turkcell.lyraapp.data.playlist
 
 /**
  * Calma listesi islemleri icin repository arayuzu.
+ *
+ * API yalnizca playlist listeleme/detay okuma endpoint'leri saglar. Yeni playlist olusturma
+ * endpoint'i olmadigindan createPlaylist aktif implementasyonda lokal validasyonla sinirlidir.
  */
 interface PlaylistRepository {
 
