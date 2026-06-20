@@ -44,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.turkcell.lyraapp.data.home.PlaylistForYou
+import com.turkcell.lyraapp.data.home.ForYouSong
 import com.turkcell.lyraapp.data.home.QuickPick
 import com.turkcell.lyraapp.data.home.RecentlyPlayed
 import com.turkcell.lyraapp.ui.icons.LyraIcons
@@ -132,11 +132,11 @@ fun HomeScreen(
                 item { QuickPickGrid(quickPicks = state.quickPicks, onSongClick = { id -> onIntent(HomeIntent.SongClicked(id)) }) }
                 item { SectionHeader(title = "Son çalınanlar", trailingText = "Tümü") }
                 item { RecentlyPlayedRow(items = state.recentlyPlayed, onSongClick = { id -> onIntent(HomeIntent.SongClicked(id)) }) }
-                item { SectionHeader(title = "Senin için çalma listeleri") }
+                item { SectionHeader(title = "Senin İçin Müzikler") }
                 item {
-                    PlaylistsForYouRow(
-                        items = state.playlistsForYou,
-                        onPlaylistClick = { id -> onIntent(HomeIntent.PlaylistClicked(id)) },
+                    ForYouRow(
+                        items = state.forYou,
+                        onSongClick = { id -> onIntent(HomeIntent.SongClicked(id)) },
                     )
                 }
             }
@@ -335,11 +335,11 @@ private fun RecentlyPlayedRow(
     }
 }
 
-/** "Senin için çalma listeleri" yatay scrollable büyük kart listesi. */
+/** "Senin İçin Müzikler" yatay scrollable büyük kart listesi. */
 @Composable
-private fun PlaylistsForYouRow(
-    items: List<PlaylistForYou>,
-    onPlaylistClick: (playlistId: String) -> Unit,
+private fun ForYouRow(
+    items: List<ForYouSong>,
+    onSongClick: (songId: String) -> Unit,
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 20.dp),
@@ -349,7 +349,7 @@ private fun PlaylistsForYouRow(
             Column(
                 modifier = Modifier
                     .width(170.dp)
-                    .clickable { onPlaylistClick(item.id) },
+                    .clickable { onSongClick(item.id) },
             ) {
                 Artwork(
                     startColor = item.artworkStartColor,
@@ -410,10 +410,10 @@ private val previewState = HomeUiState(
         RecentlyPlayed("rp-2", "Derin Mavi", "Okyanus", 0xFF6FBF5A, 0xFF356B2A),
         RecentlyPlayed("rp-3", "Yıldız Tozu", "Polaris", 0xFF3D5A80, 0xFF1B2A45),
     ),
-    playlistsForYou = listOf(
-        PlaylistForYou("pl-1", "Haftalık Keşif", 0xFF9B7FC4, 0xFF5A4480),
-        PlaylistForYou("pl-2", "Sakin Akşamlar", 0xFF6B5FB8, 0xFF3A3270),
-        PlaylistForYou("pl-3", "Enerji Ver", 0xFF3FAE9C, 0xFF1E5D52),
+    forYou = listOf(
+        ForYouSong("fy-1", "Haftalık Keşif", 0xFF9B7FC4, 0xFF5A4480),
+        ForYouSong("fy-2", "Sakin Akşamlar", 0xFF6B5FB8, 0xFF3A3270),
+        ForYouSong("fy-3", "Enerji Ver", 0xFF3FAE9C, 0xFF1E5D52),
     ),
 )
 

@@ -1,6 +1,6 @@
 package com.turkcell.lyraapp.ui.home
 
-import com.turkcell.lyraapp.data.home.PlaylistForYou
+import com.turkcell.lyraapp.data.home.ForYouSong
 import com.turkcell.lyraapp.data.home.QuickPick
 import com.turkcell.lyraapp.data.home.RecentlyPlayed
 
@@ -15,18 +15,15 @@ data class HomeUiState(
     val userInitials: String = "",
     val quickPicks: List<QuickPick> = emptyList(),
     val recentlyPlayed: List<RecentlyPlayed> = emptyList(),
-    val playlistsForYou: List<PlaylistForYou> = emptyList(),
+    val forYou: List<ForYouSong> = emptyList(),
 )
 
 sealed interface HomeIntent {
     /** Besleme yüklemesi başarısız olduğunda kullanıcı yeniden dener. */
     data object Retry : HomeIntent
 
-    /** Kullanıcı bir şarkı kartına (QuickPick veya RecentlyPlayed) tıkladı. */
+    /** Kullanıcı bir şarkı kartına (QuickPick, RecentlyPlayed veya ForYou) tıkladı. */
     data class SongClicked(val songId: String) : HomeIntent
-
-    /** Kullanıcı bir çalma listesi kartına tıkladı. */
-    data class PlaylistClicked(val playlistId: String) : HomeIntent
 }
 
 sealed interface HomeEffect {

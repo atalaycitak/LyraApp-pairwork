@@ -65,6 +65,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideHomeApiService(retrofit: Retrofit): com.turkcell.lyraapp.data.home.HomeApiService =
+        retrofit.create(com.turkcell.lyraapp.data.home.HomeApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideAuthApiService(retrofit: Retrofit): com.turkcell.lyraapp.data.auth.AuthApiService =
         retrofit.create(com.turkcell.lyraapp.data.auth.AuthApiService::class.java)
 }
