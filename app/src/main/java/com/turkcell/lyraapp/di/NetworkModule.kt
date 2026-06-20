@@ -35,8 +35,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        authInterceptor: com.turkcell.lyraapp.data.common.AuthInterceptor
+    ): OkHttpClient =
         OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
 
@@ -58,4 +62,9 @@ object NetworkModule {
     @Singleton
     fun providePlaylistApiService(retrofit: Retrofit): PlaylistApiService =
         retrofit.create(PlaylistApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAuthApiService(retrofit: Retrofit): com.turkcell.lyraapp.data.auth.AuthApiService =
+        retrofit.create(com.turkcell.lyraapp.data.auth.AuthApiService::class.java)
 }

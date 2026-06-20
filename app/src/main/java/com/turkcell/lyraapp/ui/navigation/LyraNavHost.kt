@@ -14,8 +14,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.turkcell.lyraapp.ui.auth.login.LoginRoute
-import com.turkcell.lyraapp.ui.auth.register.RegisterRoute
+import com.turkcell.lyraapp.ui.auth.phone.PhoneRoute
+import com.turkcell.lyraapp.ui.auth.otp.OtpRoute
+import com.turkcell.lyraapp.ui.profile.complete.CompleteProfileRoute
 import com.turkcell.lyraapp.ui.favorites.FavoritesRoute
 import com.turkcell.lyraapp.ui.home.HomeRoute
 import com.turkcell.lyraapp.ui.library.LibraryRoute
@@ -52,8 +53,9 @@ fun LyraNavHost(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            if (currentRoute != LyraDestination.Login.route && 
-                currentRoute != LyraDestination.Register.route && 
+            if (currentRoute != LyraDestination.Phone.route && 
+                currentRoute?.startsWith("otp") != true &&
+                currentRoute != LyraDestination.CompleteProfile.route && 
                 currentRoute?.startsWith(LyraDestination.NowPlaying.route.substringBefore("{")) != true) {
                 androidx.compose.foundation.layout.Column {
                     com.turkcell.lyraapp.ui.components.miniplayer.LyraMiniPlayerRoute(
@@ -75,30 +77,40 @@ fun LyraNavHost(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = LyraDestination.Login.route,
+            startDestination = LyraDestination.Phone.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(LyraDestination.Login.route) {
-                LoginRoute(
-                    onNavigateToHome = { navController.navigateToHomeClearingAuth() },
-                    onNavigateToRegister = {
-                        navController.navigate(LyraDestination.Register.route) {
+            composable(LyraDestination.Phone.route) {
+                PhoneRoute(
+                    onNavigateToOtp = { phone ->
+                        navController.navigate(LyraDestination.otpRoute(phone)) {
                             launchSingleTop = true
                         }
-                    },
+                    }
                 )
             }
 
-            composable(LyraDestination.Register.route) {
-                RegisterRoute(
+            composable(
+                route = LyraDestination.Otp.route,
+                arguments = listOf(
+                    navArgument("phoneNumber") { type = NavType.StringType }
+                )
+            ) {
+                OtpRoute(
+                    onNavigateBack = { navController.popBackStack() },
                     onNavigateToHome = { navController.navigateToHomeClearingAuth() },
-                    onNavigateToLogin = {
-                        navController.navigate(LyraDestination.Login.route) {
-                            popUpTo(LyraDestination.Login.route) { inclusive = false }
+                    onNavigateToCompleteProfile = {
+                        navController.navigate(LyraDestination.CompleteProfile.route) {
                             launchSingleTop = true
                         }
-                    },
+                    }
+                )
+            }
+            
+            composable(LyraDestination.CompleteProfile.route) {
+                CompleteProfileRoute(
                     onNavigateBack = { navController.popBackStack() },
+                    onNavigateToHome = { navController.navigateToHomeClearingAuth() }
                 )
             }
 
@@ -221,10 +233,10 @@ private fun NavHostController.navigateToTab(destination: LyraDestination) {
     }
 }
 
-/** Auth akışını back stack'ten temizleyerek Home'a geçer (geri tuşu Login'e dönmez). */
+/** Auth akışını back stack'ten temizleyerek Home'a geçer (geri tuşu Phone'a dönmez). */
 private fun NavHostController.navigateToHomeClearingAuth() {
     navigate(LyraDestination.Home.route) {
-        popUpTo(LyraDestination.Login.route) { inclusive = true }
+        popUpTo(LyraDestination.Phone.route) { inclusive = true }
         launchSingleTop = true
     }
 }
