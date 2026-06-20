@@ -12,7 +12,7 @@ data class HomeFeed(
     val userInitials: String,
     val quickPicks: List<QuickPick>,
     val recentlyPlayed: List<RecentlyPlayed>,
-    val playlistsForYou: List<PlaylistForYou>,
+    val forYou: List<ForYouSong>,
 )
 
 /** "Ne dinlemek istersin?" grid'indeki hızlı seçim öğesi. */
@@ -32,8 +32,8 @@ data class RecentlyPlayed(
     val artworkEndColor: Long,
 )
 
-/** "Senin için çalma listeleri" bölümündeki öğe. */
-data class PlaylistForYou(
+/** "Senin için müzikler" bölümündeki öğe. */
+data class ForYouSong(
     val id: String,
     val title: String,
     val artworkStartColor: Long,

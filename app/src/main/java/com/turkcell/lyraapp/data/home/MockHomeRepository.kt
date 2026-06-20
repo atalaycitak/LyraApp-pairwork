@@ -19,7 +19,7 @@ class MockHomeRepository @Inject constructor() : HomeRepository {
                 userInitials = "ZK",
                 quickPicks = QUICK_PICKS,
                 recentlyPlayed = RECENTLY_PLAYED,
-                playlistsForYou = PLAYLISTS_FOR_YOU,
+                forYou = FOR_YOU_SONGS,
             ),
         )
     }
@@ -42,10 +42,10 @@ class MockHomeRepository @Inject constructor() : HomeRepository {
             RecentlyPlayed("rp-3", "Yıldız Tozu", "Polaris", 0xFF3D5A80, 0xFF1B2A45),
         )
 
-        val PLAYLISTS_FOR_YOU = listOf(
-            PlaylistForYou("pl-1", "Haftalık Keşif", 0xFF9B7FC4, 0xFF5A4480),
-            PlaylistForYou("pl-2", "Sakin Akşamlar", 0xFF6B5FB8, 0xFF3A3270),
-            PlaylistForYou("pl-3", "Enerji Ver", 0xFF3FAE9C, 0xFF1E5D52),
+        val FOR_YOU_SONGS = listOf(
+            ForYouSong("fy-1", "Haftalık Keşif", 0xFF9B7FC4, 0xFF5A4480),
+            ForYouSong("fy-2", "Sakin Akşamlar", 0xFF6B5FB8, 0xFF3A3270),
+            ForYouSong("fy-3", "Enerji Ver", 0xFF3FAE9C, 0xFF1E5D52),
         )
     }
 }

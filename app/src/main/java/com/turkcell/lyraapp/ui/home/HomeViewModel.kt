@@ -43,9 +43,6 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.SongClicked -> viewModelScope.launch {
                 _effect.send(HomeEffect.NavigateToNowPlaying(intent.songId))
             }
-            is HomeIntent.PlaylistClicked -> viewModelScope.launch {
-                _effect.send(HomeEffect.NavigateToPlaylistDetail(intent.playlistId))
-            }
         }
     }
 
@@ -62,7 +59,7 @@ class HomeViewModel @Inject constructor(
                             userInitials = feed.userInitials,
                             quickPicks = feed.quickPicks,
                             recentlyPlayed = feed.recentlyPlayed,
-                            playlistsForYou = feed.playlistsForYou,
+                            forYou = feed.forYou,
                         )
                     }
                 }
