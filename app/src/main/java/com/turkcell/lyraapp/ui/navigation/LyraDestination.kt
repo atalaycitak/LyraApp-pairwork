@@ -10,8 +10,9 @@ package com.turkcell.lyraapp.ui.navigation
  * [NowPlaying.routeWithArg] kullanılır.
  */
 enum class LyraDestination(val route: String) {
-    Login("login"),
-    Register("register"),
+    Phone("phone"),
+    Otp("otp/{phoneNumber}"),
+    CompleteProfile("complete_profile"),
     Home("home"),
     Search("search"),
     Library("library"),
@@ -28,6 +29,8 @@ enum class LyraDestination(val route: String) {
         
         /** PlaylistDetail rotası için playlistId'yi yerleştirilmiş tam rota döndürür. */
         fun playlistDetailRoute(playlistId: String): String = "playlist_detail/$playlistId"
+        
+        fun otpRoute(phoneNumber: String): String = "otp/$phoneNumber"
     }
 }
 
