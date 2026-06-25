@@ -25,3 +25,16 @@ data class PlaylistWithSongsDto(
     @SerializedName("createdAt") val createdAt: String,
     @SerializedName("songs") val songs: List<SongDto>,
 )
+
+data class CreatePlaylistRequestDto(
+    @SerializedName("name") val name: String,
+    @SerializedName("description") val description: String?,
+)
+
+data class AddTrackRequestDto(
+    @SerializedName("songId") val songId: String,
+)
+
+data class PlaylistResponseDto(
+    @SerializedName("data") val data: PlaylistDto,
+)

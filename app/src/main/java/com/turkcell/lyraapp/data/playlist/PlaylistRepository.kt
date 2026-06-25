@@ -29,4 +29,10 @@ interface PlaylistRepository {
      * Verilen ID'ye sahip çalma listesinin detaylarını döndürür.
      */
     suspend fun getPlaylistDetail(playlistId: String): Result<PlaylistDetailModel>
+
+    /** Kullanıcının kendi kütüphanesindeki çalma listelerini getirir. */
+    suspend fun getMyPlaylists(): Result<List<PlaylistSummaryModel>>
+
+    /** Kullanıcının kendi listesinden bir şarkı çıkarır. */
+    suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit>
 }

@@ -9,4 +9,7 @@ interface PlayerController {
     fun togglePlayPause()
     fun seekTo(positionMs: Long)
     fun release()
+    
+    fun downloadCurrentSong()
+    fun removeDownload()
 }

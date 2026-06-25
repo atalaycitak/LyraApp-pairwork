@@ -204,7 +204,8 @@ fun PlaylistDetailScreen(
                             SongListItem(
                                 song = song,
                                 onClick = { viewModel.onIntent(PlaylistDetailIntent.OnSongClick(song.id)) },
-                                onLikeClick = { viewModel.onIntent(PlaylistDetailIntent.OnLikeSongClick(song.id)) }
+                                onLikeClick = { viewModel.onIntent(PlaylistDetailIntent.OnLikeSongClick(song.id)) },
+                                onRemoveClick = { viewModel.onIntent(PlaylistDetailIntent.OnRemoveSongClick(song.id)) }
                             )
                         }
                     }
@@ -223,8 +224,10 @@ fun PlaylistDetailScreen(
 fun SongListItem(
     song: SongItem,
     onClick: () -> Unit,
-    onLikeClick: () -> Unit
+    onLikeClick: () -> Unit,
+    onRemoveClick: () -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -297,14 +300,30 @@ fun SongListItem(
             )
         }
 
-        // More Button
-        IconButton(onClick = { /* TODO: Song Options */ }, modifier = Modifier.size(36.dp)) {
-            Icon(
-                imageVector = LyraIcons.MoreVert,
-                contentDescription = "Daha Fazla",
-                tint = Color.Gray,
-                modifier = Modifier.size(20.dp)
-            )
+        // More Button & Menu
+        Box {
+            IconButton(onClick = { showMenu = true }, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    imageVector = LyraIcons.MoreVert,
+                    contentDescription = "Daha Fazla",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false },
+                modifier = Modifier.background(Color(0xFF2C2C2C))
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Listeden Çıkar", color = Color.White) },
+                    onClick = {
+                        showMenu = false
+                        onRemoveClick()
+                    }
+                )
+            }
         }
     }
 }

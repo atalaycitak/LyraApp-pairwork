@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.data.library
 
 import com.turkcell.lyraapp.data.common.ArtworkPalette
+import com.turkcell.lyraapp.data.playlist.PlaylistRepository
 import com.turkcell.lyraapp.data.song.SongRepository
 import javax.inject.Inject
 
@@ -13,27 +14,44 @@ import javax.inject.Inject
  */
 class RetrofitLibraryRepository @Inject constructor(
     private val songRepository: SongRepository,
+    private val playlistRepository: PlaylistRepository,
 ) : LibraryRepository {
 
     override suspend fun getLibraryFeed(): Result<LibraryFeed> = runCatching {
         val response = songRepository.getSongs(limit = SONG_LIMIT).getOrThrow()
         val songs = response.data
 
+        val myPlaylists = playlistRepository.getMyPlaylists().getOrDefault(emptyList())
+
+        val songItems = songs.map { song ->
+            val (startColor, endColor) = ArtworkPalette.colorPairForId(song.id)
+            LibraryItem(
+                id = song.id,
+                title = song.title,
+                subtitle = song.artist,
+                type = LibraryItemType.Song,
+                artworkStartColor = startColor,
+                artworkEndColor = endColor,
+                isDownloaded = false,
+            )
+        }
+
+        val playlistItems = myPlaylists.map { playlist ->
+            LibraryItem(
+                id = playlist.id,
+                title = playlist.title,
+                subtitle = "Çalma Listesi",
+                type = LibraryItemType.Playlist,
+                artworkStartColor = playlist.coverStartColor,
+                artworkEndColor = playlist.coverEndColor,
+                isDownloaded = false,
+            )
+        }
+
         LibraryFeed(
             filters = FILTERS,
             quickActions = QUICK_ACTIONS,
-            items = songs.map { song ->
-                val (startColor, endColor) = ArtworkPalette.colorPairForId(song.id)
-                LibraryItem(
-                    id = song.id,
-                    title = song.title,
-                    subtitle = song.artist,
-                    type = LibraryItemType.Song,
-                    artworkStartColor = startColor,
-                    artworkEndColor = endColor,
-                    isDownloaded = false,
-                )
-            },
+            items = playlistItems + songItems,
         )
     }
 

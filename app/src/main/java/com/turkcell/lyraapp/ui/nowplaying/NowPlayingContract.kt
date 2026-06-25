@@ -16,6 +16,8 @@ data class NowPlayingUiState(
     val durationMs: Long = 0L,
     val currentPositionMs: Long = 0L,
     val isPlaying: Boolean = true,
+    val isDownloaded: Boolean = false,
+    val downloadProgress: Float? = null,
 )
 
 /**
@@ -42,6 +44,9 @@ sealed interface NowPlayingIntent {
 
     /** Besleme yüklemesi başarısız olduğunda kullanıcı yeniden dener. */
     data object Retry : NowPlayingIntent
+
+    /** Şarkıyı indir / indirmeyi iptal et. */
+    data object DownloadSong : NowPlayingIntent
 }
 
 /**
@@ -53,4 +58,7 @@ sealed interface NowPlayingEffect {
     data object NavigateBack : NowPlayingEffect
 
     data class ShowError(val message: String) : NowPlayingEffect
+
+    /** İndirme sonucu (hata vs) için. */
+    data class ShowDownloadResult(val message: String) : NowPlayingEffect
 }

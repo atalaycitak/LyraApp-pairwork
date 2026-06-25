@@ -80,6 +80,9 @@ fun NowPlayingRoute(
                         viewModel.onIntent(NowPlayingIntent.Retry)
                     }
                 }
+                is NowPlayingEffect.ShowDownloadResult -> {
+                    snackbarHostState.showSnackbar(message = effect.message)
+                }
             }
         }
     }
@@ -160,7 +163,10 @@ fun NowPlayingScreen(
                     title = state.trackTitle,
                     artist = state.artistName,
                     isFavorite = isFavorite,
+                    isDownloaded = state.isDownloaded,
+                    downloadProgress = state.downloadProgress,
                     onFavoriteClick = { isFavorite = !isFavorite },
+                    onDownloadClick = { onIntent(NowPlayingIntent.DownloadSong) }
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -279,7 +285,10 @@ private fun TrackInfo(
     title: String,
     artist: String,
     isFavorite: Boolean,
+    isDownloaded: Boolean,
+    downloadProgress: Float?,
     onFavoriteClick: () -> Unit,
+    onDownloadClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -302,6 +311,25 @@ private fun TrackInfo(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+
+        if (downloadProgress != null) {
+            CircularProgressIndicator(
+                progress = { downloadProgress },
+                modifier = Modifier.padding(12.dp).size(24.dp),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            IconButton(onClick = onDownloadClick) {
+                Icon(
+                    imageVector = if (isDownloaded) LyraIcons.CheckCircle else LyraIcons.Download,
+                    contentDescription = "İndir",
+                    tint = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+        }
+
         IconButton(onClick = onFavoriteClick) {
             Icon(
                 imageVector = if (isFavorite) LyraIcons.Favorite else LyraIcons.FavoriteOutlined,

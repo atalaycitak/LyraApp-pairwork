@@ -28,12 +28,34 @@ class RetrofitPlaylistRepository @Inject constructor(
         description: String,
         isPublic: Boolean,
         songIds: List<String>,
-    ): Result<Unit> =
+    ): Result<Unit> = runCatching {
         if (name.isBlank()) {
-            Result.failure(IllegalArgumentException("Çalma listesi adı boş olamaz."))
-        } else {
-            Result.success(Unit)
+            throw IllegalArgumentException("Çalma listesi adı boş olamaz.")
         }
+        val response = playlistApiService.createPlaylist(CreatePlaylistRequestDto(name, description))
+        val playlistId = response.data.id
+        
+        songIds.forEach { songId ->
+            playlistApiService.addTrackToPlaylist(playlistId, AddTrackRequestDto(songId))
+        }
+    }
+
+    override suspend fun getMyPlaylists(): Result<List<PlaylistSummaryModel>> = runCatching {
+        playlistApiService.getMyPlaylists().data.map { dto ->
+            val (startColor, endColor) = ArtworkPalette.colorPairForId(dto.id)
+            PlaylistSummaryModel(
+                id = dto.id,
+                title = dto.name,
+                description = dto.description.orEmpty(),
+                coverStartColor = startColor,
+                coverEndColor = endColor
+            )
+        }
+    }
+
+    override suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit> = runCatching {
+        playlistApiService.removeTrackFromPlaylist(playlistId, songId)
+    }
 
     override suspend fun getPlaylistDetail(playlistId: String): Result<PlaylistDetailModel> = runCatching {
         playlistApiService.getPlaylistDetail(playlistId).data.toPlaylistDetailModel()

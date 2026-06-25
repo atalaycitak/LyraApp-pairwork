@@ -340,3 +340,30 @@
   foreground service olarak çalışarak müziğin kesintisiz devam etmesini ve sistem bildirim
   panelinden kontrol edilebilmesini sağlar. Media3'ün kendi `MediaSessionService`
   implementasyonu bildirimi otomatik yönettiği için ek `NotificationCompat` kodu gerekmez.
+
+
+### Offline Müzik İndirme
+
+- Seçim: **Room Veritabanı + OkHttp Download + Yerel ExoPlayer Oynatımı**
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Bağımlılık: `androidx.room:room-runtime`, `room-ktx`, `room-compiler` **2.6.1**
+
+- Uygulama: `SongDownloadManager` üzerinden OkHttp kullanılarak `streamUrl` byte bazında çekilip
+  cihazın yerel diskine kaydedilir. İndirilen şarkının metadata ve dosya yolu **Room** `DownloadedSongEntity`
+  ile kalıcı bellekte saklanır. `AudioPlayerManager.playSong()` metodu, ağ üzerinden URL çekmeden önce
+  Room veritabanını kontrol eder; eğer dosya varsa `MediaItem.fromUri(localFileUri)` kullanarak
+  offline akış başlatır.
+  
+- Sebep: NowPlaying ekranından indirilen şarkıların internet bağlantısı olmadan da dinlenebilmesi.
+
+### Kişisel Çalma Listesi Yönetimi (API Entegrasyonu)
+
+- Seçim: **Retrofit `POST/DELETE` API Uçlarının Kullanımı** — Çalma listesi oluşturma ve düzenleme işlemleri gerçek API üzerinden yapılır.
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Uygulama: `PlaylistApiService` içine `/api/v1/me/playlists` endpoint'leri (`GET`, `POST` playlist ve `POST/DELETE` tracks) eklendi. `CreatePlaylistViewModel`, sahte geri dönüş yerine `PlaylistRepository.createPlaylist` çağrısıyla API'de çalma listesini oluşturup ardından `addTrackToPlaylist` iterasyonlarıyla seçili şarkıları bağlar. `LibraryScreen`'deki `RetrofitLibraryRepository`, bu uçları çağırarak "Kendi Kütüphanem" feed'ine API'dan gelen kullanıcıya ait `PlaylistSummaryModel`'leri ekler. `PlaylistDetailScreen`'e eklenen `DropdownMenu` ile listelerde şarkı çıkarma (`removeSongFromPlaylist`) olanağı sağlanır.
+
+- Sebep: Kütüphanede rastgele simüle edilen sahte listeler ve oluşturulamayan playlist özelliklerinin backend sözleşmesiyle çalışan, tam yetkili (gerçek veri + manipülasyon) hale getirilmesi.
