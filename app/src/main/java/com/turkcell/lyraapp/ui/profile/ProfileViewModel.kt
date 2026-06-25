@@ -41,6 +41,32 @@ class ProfileViewModel @Inject constructor(
             ProfileIntent.OnNotificationsClick -> sendEffect(ProfileEffect.NavigateToNotifications)
             ProfileIntent.OnPrivacyClick -> sendEffect(ProfileEffect.ShowSnackbar("Gizlilik ayarları"))
             ProfileIntent.OnHelpClick -> sendEffect(ProfileEffect.ShowSnackbar("Yardım ve destek"))
+            
+            ProfileIntent.OnEditProfileClick -> {
+                _uiState.update { it.copy(showEditDialog = true) }
+            }
+            ProfileIntent.OnDismissEditDialog -> {
+                _uiState.update { it.copy(showEditDialog = false) }
+            }
+            is ProfileIntent.OnSaveProfile -> saveProfile(intent.firstName, intent.lastName, intent.birthDate)
+        }
+    }
+
+    private fun saveProfile(firstName: String, lastName: String, birthDate: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            val result = profileRepository.updateProfile(firstName, lastName, birthDate)
+            result.fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isSaving = false, showEditDialog = false) }
+                    sendEffect(ProfileEffect.ShowSnackbar("Profil güncellendi"))
+                    loadProfile() // Yeniden yükle
+                },
+                onFailure = { error ->
+                    _uiState.update { it.copy(isSaving = false) }
+                    sendEffect(ProfileEffect.ShowSnackbar(error.message ?: "Profil güncellenemedi"))
+                }
+            )
         }
     }
 

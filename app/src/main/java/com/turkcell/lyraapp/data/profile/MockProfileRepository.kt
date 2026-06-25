@@ -12,6 +12,10 @@ class MockProfileRepository @Inject constructor() : ProfileRepository {
         return Result.success(
             UserProfile(
                 id = "usr_123",
+                phone = "+905551234567",
+                firstName = "Zeynep",
+                lastName = "Kaya",
+                birthDate = "1998-05-12",
                 name = "Zeynep Kaya",
                 username = "zeynepk",
                 initials = "ZK",
@@ -21,5 +25,10 @@ class MockProfileRepository @Inject constructor() : ProfileRepository {
                 followingCount = 348
             )
         )
+    }
+
+    override suspend fun updateProfile(firstName: String, lastName: String, birthDate: String): Result<Unit> {
+        delay(500)
+        return Result.success(Unit)
     }
 }

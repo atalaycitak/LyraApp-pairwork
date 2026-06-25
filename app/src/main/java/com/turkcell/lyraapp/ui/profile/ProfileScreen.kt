@@ -68,6 +68,13 @@ fun ProfileScreen(
                     )
                 },
                 actions = {
+                    IconButton(onClick = { onIntent(ProfileIntent.OnEditProfileClick) }) {
+                        Icon(
+                            imageVector = LyraIcons.Edit,
+                            contentDescription = "Profili Düzenle",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     IconButton(onClick = { onIntent(ProfileIntent.OnSettingsClick) }) {
                         Icon(
                             imageVector = LyraIcons.Settings,
@@ -120,6 +127,17 @@ fun ProfileScreen(
                     ProfileMenuItems(onIntent = onIntent)
                 }
             }
+
+            if (state.showEditDialog) {
+                EditProfileDialog(
+                    profile = profile,
+                    isSaving = state.isSaving,
+                    onDismiss = { onIntent(ProfileIntent.OnDismissEditDialog) },
+                    onSave = { firstName, lastName, birthDate ->
+                        onIntent(ProfileIntent.OnSaveProfile(firstName, lastName, birthDate))
+                    }
+                )
+            }
         }
     }
 }
@@ -159,6 +177,14 @@ fun ProfileHeader(profile: UserProfile) {
     Text(
         text = "@${profile.username} · ${if (profile.isPremium) "Premium" else "Ücretsiz"}",
         style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
+    Spacer(modifier = Modifier.height(4.dp))
+
+    Text(
+        text = profile.phone,
+        style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
@@ -353,4 +379,68 @@ fun ProfileMenuItem(
             modifier = Modifier.size(20.dp)
         )
     }
+}
+
+@Composable
+fun EditProfileDialog(
+    profile: UserProfile,
+    isSaving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String, String, String) -> Unit
+) {
+    var firstName by remember { mutableStateOf(profile.firstName ?: "") }
+    var lastName by remember { mutableStateOf(profile.lastName ?: "") }
+    var birthDate by remember { mutableStateOf(profile.birthDate ?: "") }
+
+    AlertDialog(
+        onDismissRequest = { if (!isSaving) onDismiss() },
+        title = { Text(text = "Profili Düzenle") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("Ad") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Soyad") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = birthDate,
+                    onValueChange = { birthDate = it },
+                    label = { Text("Doğum Tarihi (YYYY-MM-DD)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(firstName, lastName, birthDate) },
+                enabled = !isSaving
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Kaydet")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isSaving
+            ) {
+                Text("İptal")
+            }
+        }
+    )
 }
