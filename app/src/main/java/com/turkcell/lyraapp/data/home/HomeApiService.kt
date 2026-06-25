@@ -22,14 +22,18 @@ interface HomeApiService {
      * Kullanıcıya özel şarkı listesi ("Senin İçin Müzikler").
      */
     @GET("api/v1/me/for-you")
-    suspend fun getForYou(): SongsResponseDto
+    suspend fun getForYou(
+        @Query("limit") limit: Int? = null,
+    ): SongsResponseDto
 
     /**
      * GET /api/v1/me/recommendations
      * Kullanıcının dinleme geçmişine göre öneriler ("Ne dinlemek istersin?").
      */
     @GET("api/v1/me/recommendations")
-    suspend fun getRecommendations(): SongsResponseDto
+    suspend fun getRecommendations(
+        @Query("limit") limit: Int? = null,
+    ): SongsResponseDto
 
     /**
      * POST /api/v1/me/plays
