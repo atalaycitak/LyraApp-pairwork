@@ -11,4 +11,9 @@ interface HomeRepository {
 
     /** Ana sayfa beslemesinin tamamını tek seferde döndürür. */
     suspend fun getHomeFeed(): Result<HomeFeed>
+
+    /**
+     * Oynatma geçmişini backend'e bildirir.
+     */
+    suspend fun recordPlay(songId: String): Result<Unit>
 }

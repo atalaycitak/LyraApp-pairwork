@@ -367,3 +367,13 @@
 - Uygulama: `PlaylistApiService` içine `/api/v1/me/playlists` endpoint'leri (`GET`, `POST` playlist ve `POST/DELETE` tracks) eklendi. `CreatePlaylistViewModel`, sahte geri dönüş yerine `PlaylistRepository.createPlaylist` çağrısıyla API'de çalma listesini oluşturup ardından `addTrackToPlaylist` iterasyonlarıyla seçili şarkıları bağlar. `LibraryScreen`'deki `RetrofitLibraryRepository`, bu uçları çağırarak "Kendi Kütüphanem" feed'ine API'dan gelen kullanıcıya ait `PlaylistSummaryModel`'leri ekler. `PlaylistDetailScreen`'e eklenen `DropdownMenu` ile listelerde şarkı çıkarma (`removeSongFromPlaylist`) olanağı sağlanır.
 
 - Sebep: Kütüphanede rastgele simüle edilen sahte listeler ve oluşturulamayan playlist özelliklerinin backend sözleşmesiyle çalışan, tam yetkili (gerçek veri + manipülasyon) hale getirilmesi.
+
+### Oynatma Geçmişi (Plays)
+
+- Seçim: **`POST /api/v1/me/plays` ile şarkı başladığı an backend'e bildirim.**
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Uygulama: `HomeApiService` içerisine `recordPlay` endpoint'i ve modeli eklendi. `HomeRepository` bu ucu sarmalayacak şekilde güncellendi. Uygulamanın merkezi oynatma denetleyicisi olan `AudioPlayerManager`, Hilt üzerinden `HomeRepository` bağımlılığını alacak şekilde güncellendi. Yeni mimaride `playSong(songId)` metodu, şarkı başarıyla yüklenip `player.play()` çağrıldıktan hemen sonra arka planda fire-and-forget olarak `homeRepository.recordPlay(songId)` fonksiyonunu tetikler.
+
+- Sebep: Kullanıcının dinlediği şarkıların backend tarafındaki "Son Çalınanlar" (`recently-played`) listesini besleyebilmesi ve kişisel öneri algoritmalarının dinamik olarak güncellenmesi.
