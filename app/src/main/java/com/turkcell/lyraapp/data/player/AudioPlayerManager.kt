@@ -1,14 +1,19 @@
 package com.turkcell.lyraapp.data.player
 
+import android.content.ComponentName
+import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.turkcell.lyraapp.data.common.ArtworkPalette
 import com.turkcell.lyraapp.data.song.SongRepository
 import com.turkcell.lyraapp.data.download.DownloadedSongDao
 import com.turkcell.lyraapp.data.download.SongDownloadManager
 import com.turkcell.lyraapp.data.home.HomeRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,6 +26,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,23 +47,27 @@ data class GlobalPlayerState(
 
 @Singleton
 class AudioPlayerManager @Inject constructor(
-    val player: ExoPlayer,
+    @ApplicationContext private val context: Context,
     private val songRepository: SongRepository,
     private val downloadedSongDao: DownloadedSongDao,
     private val songDownloadManager: SongDownloadManager,
     private val homeRepository: HomeRepository
 ) : PlayerController {
+
     private val _playerState = MutableStateFlow(GlobalPlayerState())
     override val playerState: StateFlow<GlobalPlayerState> = _playerState.asStateFlow()
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var positionPollingJob: Job? = null
 
+    private var player: Player? = null
+    private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
+
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
                 Player.STATE_READY -> {
-                    if (player.isPlaying) startPositionPolling()
+                    if (player?.isPlaying == true) startPositionPolling()
                 }
                 Player.STATE_ENDED -> {
                     cancelPositionPolling()
@@ -77,22 +88,39 @@ class AudioPlayerManager @Inject constructor(
     }
 
     init {
-        player.addListener(playerListener)
+        initializeController()
+    }
+
+    private fun initializeController() {
+        val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture?.addListener(
+            {
+                player = controllerFuture?.get()
+                player?.addListener(playerListener)
+            },
+            ContextCompat.getMainExecutor(context)
+        )
     }
 
     override fun playSong(songId: String) {
         if (_playerState.value.songId == songId) {
             // Şarkı zaten yüklü, çalmıyorsa başlat
-            if (!player.isPlaying) player.play()
+            if (player?.isPlaying == false) player?.play()
             return
         }
 
         scope.launch {
+            // MediaController asenkron yüklendiği için hazır olmasını bekle
+            while (player == null) {
+                delay(50)
+            }
+
             _playerState.update { it.copy(isLoading = true, errorMessage = null) }
 
             cancelPositionPolling()
-            player.stop()
-            player.clearMediaItems()
+            player?.stop()
+            player?.clearMediaItems()
 
             val songResult = songRepository.getSongById(songId)
             songResult.onFailure { error ->
@@ -103,7 +131,7 @@ class AudioPlayerManager @Inject constructor(
             val song = songResult.getOrThrow()
             val (colorStart, colorEnd) = ArtworkPalette.colorPairForId(song.id)
 
-            val downloadedEntity = kotlinx.coroutines.withContext(Dispatchers.IO) {
+            val downloadedEntity = withContext(Dispatchers.IO) {
                 downloadedSongDao.getBySongId(song.id)
             }
             val isDownloaded = downloadedEntity != null
@@ -122,7 +150,7 @@ class AudioPlayerManager @Inject constructor(
             }
 
             if (isDownloaded && downloadedEntity != null) {
-                val localFile = java.io.File(downloadedEntity.filePath)
+                val localFile = File(downloadedEntity.filePath)
                 if (localFile.exists()) {
                     _playerState.update { it.copy(isLoading = false) }
                     val mediaItem = MediaItem.Builder()
@@ -134,9 +162,9 @@ class AudioPlayerManager @Inject constructor(
                                 .build()
                         )
                         .build()
-                    player.setMediaItem(mediaItem)
-                    player.prepare()
-                    player.play()
+                    player?.setMediaItem(mediaItem)
+                    player?.prepare()
+                    player?.play()
                     
                     // Playback basladiginda backend'e bildir
                     homeRepository.recordPlay(song.id)
@@ -157,9 +185,9 @@ class AudioPlayerManager @Inject constructor(
                                 .build()
                         )
                         .build()
-                    player.setMediaItem(mediaItem)
-                    player.prepare()
-                    player.play()
+                    player?.setMediaItem(mediaItem)
+                    player?.prepare()
+                    player?.play()
                     
                     // Playback basladiginda backend'e bildir
                     homeRepository.recordPlay(song.id)
@@ -171,27 +199,28 @@ class AudioPlayerManager @Inject constructor(
     }
 
     override fun togglePlayPause() {
-        if (player.isPlaying) {
-            player.pause()
+        if (player?.isPlaying == true) {
+            player?.pause()
         } else {
-            player.play()
+            player?.play()
         }
     }
 
     override fun seekTo(positionMs: Long) {
-        player.seekTo(positionMs)
+        player?.seekTo(positionMs)
     }
 
     /**
      * Dinleyici ve polling islerini temizler.
      * ExoPlayer'in yasam dongusu PlaybackService tarafindan yonetildigi icin
-     * burada player.release() cagirilmaz.
+     * burada player.release() cagirilmaz, Controller serbest birakilir.
      */
     override fun release() {
         cancelPositionPolling()
-        player.removeListener(playerListener)
-        player.stop()
-        player.clearMediaItems()
+        player?.removeListener(playerListener)
+        player?.stop()
+        player?.clearMediaItems()
+        controllerFuture?.let { MediaController.releaseFuture(it) }
         scope.cancel()
     }
 
@@ -221,8 +250,8 @@ class AudioPlayerManager @Inject constructor(
         positionPollingJob = scope.launch {
             while (isActive) {
                 delay(POLLING_INTERVAL_MS)
-                if (!player.isPlaying) break
-                _playerState.update { it.copy(currentPositionMs = player.currentPosition) }
+                if (player?.isPlaying != true) break
+                _playerState.update { it.copy(currentPositionMs = player?.currentPosition ?: 0L) }
             }
         }
     }
