@@ -50,7 +50,7 @@
 - Sürümler: Hilt **2.59.2**, KSP **2.2.10-2.0.2** (Kotlin 2.2.10 ile birebir uyumlu).
 
 - Compose'da ViewModel: `androidx.hilt:hilt-lifecycle-viewmodel-compose` (`hiltViewModel()`).
-  Compose Navigation henüz kurulmadığından navigation-compose bağımlılığı eklenmemiştir.
+  Compose Navigation (`navigation-compose 2.9.5`) `LyraNavHost` uzerinden aktif olarak kullanilmaktadir.
 
 - Sebep: KSP, kapt'a göre belirgin biçimde hızlıdır ve Kotlin 2.2 ile uyumludur.
 

@@ -1,21 +1,45 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ── Kotlin / Coroutines ──
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ── Gson (Retrofit converter) ──
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.turkcell.lyraapp.data.** { *; }
+-keepclassmembers class com.turkcell.lyraapp.data.** {
+    <fields>;
+}
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ── Retrofit ──
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ── OkHttp ──
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+# ── Room ──
+-keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class *
+-keepclassmembers @androidx.room.Entity class * { <fields>; }
+-dontwarn androidx.room.paging.**
+
+# ── Hilt / Dagger ──
+-dontwarn dagger.hilt.**
+-keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+
+# ── Media3 / ExoPlayer ──
+-dontwarn androidx.media3.**
+
+# ── EncryptedSharedPreferences ──
+-keep class androidx.security.crypto.** { *; }
+
+# ── Stack trace readability ──
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

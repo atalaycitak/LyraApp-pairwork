@@ -29,6 +29,7 @@ object DatabaseModule {
     }
 
     @Provides
+    @Singleton
     fun provideDownloadedSongDao(
         database: LyraDatabase
     ): DownloadedSongDao {

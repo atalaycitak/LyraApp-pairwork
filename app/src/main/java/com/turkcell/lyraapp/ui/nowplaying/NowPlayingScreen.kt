@@ -547,6 +547,7 @@ private val previewState = NowPlayingUiState(
     isPlaying = true,
     isFavorite = true,
     isShuffleOn = true,
+    isDownloaded = true,
 )
 
 @Preview(name = "NowPlaying - Dark", showBackground = true, showSystemUi = true)

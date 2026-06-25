@@ -44,10 +44,3 @@ interface SongApiService {
     @GET("api/v1/songs/{id}/stream-url")
     suspend fun getStreamUrl(@Path("id") id: String): StreamUrlResponseDto
 }
-
-/**
- * GET /api/v1/songs/{id} yanıt zarfı.
- */
-data class SongDetailResponseDto(
-    val data: SongDto,
-)
