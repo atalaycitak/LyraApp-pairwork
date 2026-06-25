@@ -387,3 +387,13 @@
 - Uygulama: `AuthApiService` içerisindeki `updateProfile` ucu mantıksal bir ayrıştırma ile yeni oluşturulan `ProfileApiService` dosyasına taşındı. `ProfileScreen` ve `ProfileViewModel`, MVI mimarisine sadık kalınarak profil bilgilerini `GET /me` üzerinden alacak şekilde bağlandı. `UserProfile` domain modeline gerçek `phone` ve `firstName`/`lastName` gibi alanlar eklendi. Ayrıca UI katmanına kullanıcının bilgilerini düzenleyebileceği bir **Düzenle** butonu (Edit) ve güncellemelerin yapılabildiği bir **EditProfileDialog** entegre edildi.
 
 - Sebep: Profil sayfasındaki tüm bilgilerin sahte (mock) olması engelini aşarak backend ile tam entegre (read & write) profil yönetimi deneyimini sağlamak.
+
+### Token Yenileme (Authenticator) Mekanizması
+
+- Seçim: **`TokenAuthenticator` sınıfının oluşturularak OkHttp instance'ına bağlanması.**
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Uygulama: `okhttp3.Authenticator` arayüzünü uygulayan bir `TokenAuthenticator` sınıfı oluşturuldu. Bu sınıf içerisinde Dagger'ın `Provider<AuthApiService>` yapısı kullanılarak OkHttp ve Retrofit arasındaki döngüsel bağımlılık (circular dependency) kırıldı. Ağ isteklerinde alınan `401 Unauthorized` hatalarında bu sınıf devreye girer; mevcut isteği bekletir, `runBlocking` ile senkron şekilde `/api/v1/auth/refresh` ucuna `RefreshTokenRequest` gönderir. Yenileme başarılı olursa `TokenManager` üzerinden yeni token'ları kaydeder ve orijinal isteği yeni token ile yenileyerek tekrar dener. Başarısız olursa yerel token'ları temizler.
+
+- Sebep: Kısa ömürlü (short-lived) Access Token'ların süresi dolduğunda uygulamanın çökmeyip veya API bazlı hatalar göstermeyip, arkada sessizce token yenilemesi ve kullanıcının oturumunun kesintiye uğramaması (Seamless Session Management).

@@ -13,8 +13,8 @@ interface AuthApiService {
     suspend fun verifyOtp(@Body request: VerifyOtpRequest): Response<VerifyOtpResponse>
 
     @POST("api/v1/auth/refresh")
-    suspend fun refresh(): Response<VerifyOtpResponse> // It returns same auth token format
+    suspend fun refresh(@Body request: RefreshTokenRequest): Response<VerifyOtpResponse>
 
     @POST("api/v1/auth/logout")
-    suspend fun logout(): Response<LogoutResponse>
+    suspend fun logout(@Body request: RefreshTokenRequest): Response<LogoutResponse>
 }

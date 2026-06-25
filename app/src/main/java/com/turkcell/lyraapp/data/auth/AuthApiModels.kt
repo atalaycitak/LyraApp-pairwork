@@ -44,6 +44,9 @@ data class UserDto(
     @SerializedName("profileCompleted") val profileCompleted: Boolean
 )
 
+data class RefreshTokenRequest(
+    @SerializedName("refreshToken") val refreshToken: String
+)
 
 data class LogoutResponse(
     @SerializedName("data") val data: LogoutData

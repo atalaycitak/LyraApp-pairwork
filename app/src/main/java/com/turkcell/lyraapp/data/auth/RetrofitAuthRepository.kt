@@ -65,7 +65,10 @@ class RetrofitAuthRepository @Inject constructor(
 
     override suspend fun logout(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            apiService.logout()
+            val refreshToken = tokenManager.getRefreshToken()
+            if (refreshToken != null) {
+                apiService.logout(RefreshTokenRequest(refreshToken))
+            }
             tokenManager.clearTokens()
             Result.success(Unit)
         } catch (e: Exception) {

@@ -42,9 +42,11 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
-        authInterceptor: com.turkcell.lyraapp.data.common.AuthInterceptor
+        authInterceptor: com.turkcell.lyraapp.data.common.AuthInterceptor,
+        tokenAuthenticator: com.turkcell.lyraapp.data.common.TokenAuthenticator
     ): OkHttpClient =
         OkHttpClient.Builder()
+            .authenticator(tokenAuthenticator)
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
