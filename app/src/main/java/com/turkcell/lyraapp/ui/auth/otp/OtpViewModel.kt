@@ -21,7 +21,7 @@ class OtpViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val phoneNumber: String = checkNotNull(savedStateHandle["phone"])
+    private val phoneNumber: String = checkNotNull(savedStateHandle["phoneNumber"])
 
     private val _uiState = MutableStateFlow(OtpUiState(phoneNumber = phoneNumber))
     val uiState: StateFlow<OtpUiState> = _uiState.asStateFlow()

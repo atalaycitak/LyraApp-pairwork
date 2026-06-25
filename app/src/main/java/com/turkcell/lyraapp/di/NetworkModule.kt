@@ -1,5 +1,6 @@
 package com.turkcell.lyraapp.di
 
+import com.turkcell.lyraapp.BuildConfig
 import com.turkcell.lyraapp.data.song.SongApiService
 import com.turkcell.lyraapp.data.playlist.PlaylistApiService
 import dagger.Module
@@ -19,6 +20,9 @@ import javax.inject.Singleton
  * Geliştirme sırasında localhost kullanmak için bu modülde veya
  * BuildConfig üzerinden URL'i değiştirmek yeterlidir; başka hiçbir
  * katman değişmez.
+ *
+ * Günlükleme: Debug build'lerde HTTP istek/yanıt gövdeleri loglanır;
+ * release build'lerde günlükleme tamamen kapatılır (bkz. decisions.md §Guvenlik).
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,7 +34,8 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+                    else HttpLoggingInterceptor.Level.NONE
         }
 
     @Provides
