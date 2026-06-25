@@ -6,6 +6,8 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.turkcell.lyraapp.data.common.ArtworkPalette
 import com.turkcell.lyraapp.data.song.SongRepository
+import com.turkcell.lyraapp.data.download.DownloadedSongDao
+import com.turkcell.lyraapp.data.download.SongDownloadManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,13 +33,16 @@ data class GlobalPlayerState(
     val currentPositionMs: Long = 0L,
     val durationMs: Long = 0L,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isDownloaded: Boolean = false
 )
 
 @Singleton
 class AudioPlayerManager @Inject constructor(
     val player: ExoPlayer,
-    private val songRepository: SongRepository
+    private val songRepository: SongRepository,
+    private val downloadedSongDao: DownloadedSongDao,
+    private val songDownloadManager: SongDownloadManager
 ) : PlayerController {
     private val _playerState = MutableStateFlow(GlobalPlayerState())
     override val playerState: StateFlow<GlobalPlayerState> = _playerState.asStateFlow()
@@ -96,6 +101,11 @@ class AudioPlayerManager @Inject constructor(
             val song = songResult.getOrThrow()
             val (colorStart, colorEnd) = ArtworkPalette.colorPairForId(song.id)
 
+            val downloadedEntity = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                downloadedSongDao.getBySongId(song.id)
+            }
+            val isDownloaded = downloadedEntity != null
+
             _playerState.update {
                 it.copy(
                     songId = song.id,
@@ -104,8 +114,29 @@ class AudioPlayerManager @Inject constructor(
                     artworkStartColor = colorStart,
                     artworkEndColor = colorEnd,
                     durationMs = song.durationMs,
-                    currentPositionMs = 0L
+                    currentPositionMs = 0L,
+                    isDownloaded = isDownloaded
                 )
+            }
+
+            if (isDownloaded && downloadedEntity != null) {
+                val localFile = java.io.File(downloadedEntity.filePath)
+                if (localFile.exists()) {
+                    _playerState.update { it.copy(isLoading = false) }
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(android.net.Uri.fromFile(localFile))
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .setTitle(song.title)
+                                .setArtist(song.artist)
+                                .build()
+                        )
+                        .build()
+                    player.setMediaItem(mediaItem)
+                    player.prepare()
+                    player.play()
+                    return@launch
+                }
             }
 
             val urlResult = songRepository.getStreamUrl(songId)
@@ -154,6 +185,22 @@ class AudioPlayerManager @Inject constructor(
         player.stop()
         player.clearMediaItems()
         scope.cancel()
+    }
+
+    override fun downloadCurrentSong() {
+        val currentSongId = _playerState.value.songId ?: return
+        scope.launch {
+            songDownloadManager.downloadSong(currentSongId)
+            _playerState.update { it.copy(isDownloaded = true) }
+        }
+    }
+
+    override fun removeDownload() {
+        val currentSongId = _playerState.value.songId ?: return
+        scope.launch {
+            songDownloadManager.removeDownload(currentSongId)
+            _playerState.update { it.copy(isDownloaded = false) }
+        }
     }
 
     private fun cancelPositionPolling() {

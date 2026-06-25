@@ -39,3 +39,14 @@ data class PlaylistDetailModel(
     val coverEndColor: Long,
     val songs: List<SongItem>
 )
+
+/**
+ * Kütüphane listesinde gösterilecek kişisel çalma listesi modeli.
+ */
+data class PlaylistSummaryModel(
+    val id: String,
+    val title: String,
+    val description: String,
+    val coverStartColor: Long,
+    val coverEndColor: Long,
+)

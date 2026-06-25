@@ -17,6 +17,7 @@ sealed interface PlaylistDetailIntent {
     data object OnAddClick : PlaylistDetailIntent
     data object OnBackClick : PlaylistDetailIntent
     data object OnMoreClick : PlaylistDetailIntent
+    data class OnRemoveSongClick(val songId: String) : PlaylistDetailIntent
 }
 
 sealed interface PlaylistDetailEffect {

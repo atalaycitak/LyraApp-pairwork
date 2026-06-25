@@ -3,6 +3,8 @@ package com.turkcell.lyraapp.ui.nowplaying
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.turkcell.lyraapp.data.download.DownloadStatus
+import com.turkcell.lyraapp.data.download.SongDownloadManager
 import com.turkcell.lyraapp.data.player.PlayerController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -28,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class NowPlayingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val playerController: PlayerController
+    private val playerController: PlayerController,
+    private val songDownloadManager: SongDownloadManager
 ) : ViewModel() {
 
     private val songId: String = checkNotNull(savedStateHandle["songId"])
@@ -51,7 +54,8 @@ class NowPlayingViewModel @Inject constructor(
                         isPlaying = globalState.isPlaying,
                         currentPositionMs = globalState.currentPositionMs,
                         durationMs = globalState.durationMs,
-                        isLoading = globalState.isLoading
+                        isLoading = globalState.isLoading,
+                        isDownloaded = globalState.isDownloaded
                     )
                 }
                 
@@ -61,6 +65,22 @@ class NowPlayingViewModel @Inject constructor(
             }
         }
         
+        viewModelScope.launch {
+            songDownloadManager.getDownloadStatus(songId).collect { status ->
+                when (status) {
+                    is DownloadStatus.Idle -> _uiState.update { it.copy(downloadProgress = null) }
+                    is DownloadStatus.Downloading -> _uiState.update { it.copy(downloadProgress = status.progress) }
+                    is DownloadStatus.Completed -> {
+                        _uiState.update { it.copy(downloadProgress = null, isDownloaded = true) }
+                    }
+                    is DownloadStatus.Failed -> {
+                        _uiState.update { it.copy(downloadProgress = null) }
+                        _effect.send(NowPlayingEffect.ShowDownloadResult(status.message))
+                    }
+                }
+            }
+        }
+
         playerController.playSong(songId)
     }
 
@@ -73,6 +93,13 @@ class NowPlayingViewModel @Inject constructor(
             is NowPlayingIntent.SeekTo          -> playerController.seekTo(intent.positionMs)
             is NowPlayingIntent.NavigateBack    -> viewModelScope.launch { _effect.send(NowPlayingEffect.NavigateBack) }
             is NowPlayingIntent.Retry           -> playerController.playSong(songId)
+            is NowPlayingIntent.DownloadSong    -> {
+                if (_uiState.value.isDownloaded) {
+                    playerController.removeDownload()
+                } else {
+                    playerController.downloadCurrentSong()
+                }
+            }
         }
     }
 }

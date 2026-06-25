@@ -61,4 +61,12 @@ class MockPlaylistRepository @Inject constructor() : PlaylistRepository {
             )
         )
     }
+
+    override suspend fun getMyPlaylists(): Result<List<PlaylistSummaryModel>> {
+        return Result.success(emptyList())
+    }
+
+    override suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
 }

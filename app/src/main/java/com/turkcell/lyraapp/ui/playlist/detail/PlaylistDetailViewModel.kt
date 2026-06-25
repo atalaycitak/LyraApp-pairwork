@@ -36,6 +36,7 @@ class PlaylistDetailViewModel @Inject constructor(
             PlaylistDetailIntent.OnMoreClick -> showSnackbar("Daha fazla seçenek")
             PlaylistDetailIntent.OnPlayClick -> showSnackbar("Çalma listesi oynatılıyor")
             PlaylistDetailIntent.OnShuffleClick -> showSnackbar("Karışık çalma açıldı")
+            is PlaylistDetailIntent.OnRemoveSongClick -> removeSong(intent.songId)
         }
     }
 
@@ -67,6 +68,22 @@ class PlaylistDetailViewModel @Inject constructor(
 
     private fun navigateToPlayer(songId: String) {
         sendEffect(PlaylistDetailEffect.NavigateToPlayer(songId))
+    }
+
+    private fun removeSong(songId: String) {
+        val detail = _uiState.value.playlistDetail ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            playlistRepository.removeSongFromPlaylist(detail.id, songId)
+                .onSuccess {
+                    showSnackbar("Şarkı listeden çıkarıldı.")
+                    loadPlaylist(detail.id) // Yeniden yükle
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isLoading = false) }
+                    showSnackbar("Şarkı çıkarılamadı (Yetkiniz olmayabilir).")
+                }
+        }
     }
 
     private fun showSnackbar(message: String) {
