@@ -397,3 +397,13 @@
 - Uygulama: `okhttp3.Authenticator` arayüzünü uygulayan bir `TokenAuthenticator` sınıfı oluşturuldu. Bu sınıf içerisinde Dagger'ın `Provider<AuthApiService>` yapısı kullanılarak OkHttp ve Retrofit arasındaki döngüsel bağımlılık (circular dependency) kırıldı. Ağ isteklerinde alınan `401 Unauthorized` hatalarında bu sınıf devreye girer; mevcut isteği bekletir, `runBlocking` ile senkron şekilde `/api/v1/auth/refresh` ucuna `RefreshTokenRequest` gönderir. Yenileme başarılı olursa `TokenManager` üzerinden yeni token'ları kaydeder ve orijinal isteği yeni token ile yenileyerek tekrar dener. Başarısız olursa yerel token'ları temizler.
 
 - Sebep: Kısa ömürlü (short-lived) Access Token'ların süresi dolduğunda uygulamanın çökmeyip veya API bazlı hatalar göstermeyip, arkada sessizce token yenilemesi ve kullanıcının oturumunun kesintiye uğramaması (Seamless Session Management).
+
+### Arka Planda Çalma (Background Playback) Optimizasyonu
+
+- Seçim: **`AudioPlayerManager` içerisinde doğrudan `ExoPlayer` yerine `MediaController` kullanımı.**
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Uygulama: Önceden `AudioPlayerManager` doğrudan singleton olarak enjekte edilmiş `ExoPlayer` nesnesini yönetiyordu. Ancak Media3 mimarisinde, Android sisteminin uygulamanın arkaplanda (Foreground Service) müzik çaldığını algılayabilmesi için `PlaybackService`'e (MediaSessionService) bir denetleyici ile bağlanılması zorunludur. `AudioPlayerManager` yeniden yazılarak, başlatıldığı anda `MediaController.Builder().buildAsync()` kullanılıp `PlaybackService`'e bağlanan bir denetleyiciye dönüştürüldü. Ayrıca asenkron başlatmayı güvenli hale getirmek için `scope.launch` içerisinde controller yüklenene kadar bekleyen korumalar (safeguard) eklendi.
+
+- Sebep: Uygulama arka plana atıldığında (veya kilit ekranındayken) Android OS'in `PlaybackService`'i öldürmesini engellemek, bildirim çubuğunda şarkı kontrollerinin (Medya Kontrol Paneli) doğru şekilde kalmasını ve sistemle entegre çalışmasını garantilemek.
