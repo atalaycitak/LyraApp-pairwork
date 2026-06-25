@@ -316,3 +316,27 @@
 
 - Sebep: Uygulamanın hedef kullanıcı kitlesi Türk kullanıcılar olduğu için arayüz dilinin doğal,
   tutarlı ve okunabilir olması gerekir.
+
+
+### Arka Plan Müzik Oynatma (Background Playback)
+
+- Seçim: **androidx.media3 MediaSessionService** — `PlaybackService` sınıfı
+  `MediaSessionService`'ten türer; Singleton `ExoPlayer`'ı Hilt ile alır ve `MediaSession`
+  oluşturarak arka plan oynatımı + sistem bildirim kontrollerini sağlar.
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Bağımlılık: `androidx.media3:media3-session` **1.6.1** (version catalog: `media3`).
+
+- Uygulama: `NowPlayingModule`'deki `provideExoPlayer()` fonksiyonu `AudioAttributes`
+  (CONTENT_TYPE_MUSIC, USAGE_MEDIA), `handleAudioBecomingNoisy(true)` ve
+  `setWakeMode(C.WAKE_MODE_NETWORK)` ile yapılandırıldı. `PlaybackService`
+  (`data/player/PlaybackService.kt`) `@AndroidEntryPoint` ile işaretlenip `ExoPlayer`
+  singleton'ını enjekte eder; `onCreate`'de `MediaSession` oluşturur, `onDestroy`'da serbest
+  bırakır. `AndroidManifest.xml`'e `FOREGROUND_SERVICE` ve
+  `FOREGROUND_SERVICE_MEDIA_PLAYBACK` izinleri ile `<service>` tanımı eklendi.
+
+- Sebep: Android, Activity arka plana geçtiğinde sesi kesmektedir. `MediaSessionService`
+  foreground service olarak çalışarak müziğin kesintisiz devam etmesini ve sistem bildirim
+  panelinden kontrol edilebilmesini sağlar. Media3'ün kendi `MediaSessionService`
+  implementasyonu bildirimi otomatik yönettiği için ek `NotificationCompat` kodu gerekmez.
