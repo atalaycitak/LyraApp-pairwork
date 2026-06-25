@@ -1,7 +1,9 @@
 package com.turkcell.lyraapp.data.home
 
 import com.turkcell.lyraapp.data.song.SongsResponseDto
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface HomeApiService {
@@ -28,4 +30,11 @@ interface HomeApiService {
      */
     @GET("api/v1/me/recommendations")
     suspend fun getRecommendations(): SongsResponseDto
+
+    /**
+     * POST /api/v1/me/plays
+     * Kullanıcı bir şarkı çaldığında bunu backend'e bildirir.
+     */
+    @POST("api/v1/me/plays")
+    suspend fun recordPlay(@Body request: RecordPlayRequestDto)
 }

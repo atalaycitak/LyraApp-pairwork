@@ -8,6 +8,7 @@ import com.turkcell.lyraapp.data.common.ArtworkPalette
 import com.turkcell.lyraapp.data.song.SongRepository
 import com.turkcell.lyraapp.data.download.DownloadedSongDao
 import com.turkcell.lyraapp.data.download.SongDownloadManager
+import com.turkcell.lyraapp.data.home.HomeRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -42,7 +43,8 @@ class AudioPlayerManager @Inject constructor(
     val player: ExoPlayer,
     private val songRepository: SongRepository,
     private val downloadedSongDao: DownloadedSongDao,
-    private val songDownloadManager: SongDownloadManager
+    private val songDownloadManager: SongDownloadManager,
+    private val homeRepository: HomeRepository
 ) : PlayerController {
     private val _playerState = MutableStateFlow(GlobalPlayerState())
     override val playerState: StateFlow<GlobalPlayerState> = _playerState.asStateFlow()
@@ -135,6 +137,9 @@ class AudioPlayerManager @Inject constructor(
                     player.setMediaItem(mediaItem)
                     player.prepare()
                     player.play()
+                    
+                    // Playback basladiginda backend'e bildir
+                    homeRepository.recordPlay(song.id)
                     return@launch
                 }
             }
@@ -155,6 +160,9 @@ class AudioPlayerManager @Inject constructor(
                     player.setMediaItem(mediaItem)
                     player.prepare()
                     player.play()
+                    
+                    // Playback basladiginda backend'e bildir
+                    homeRepository.recordPlay(song.id)
                 }
                 .onFailure { error ->
                     _playerState.update { it.copy(errorMessage = error.message ?: "Ses akışı başlatılamadı.") }

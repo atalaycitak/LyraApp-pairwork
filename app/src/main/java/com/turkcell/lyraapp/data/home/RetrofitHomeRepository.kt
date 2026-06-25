@@ -66,4 +66,8 @@ class RetrofitHomeRepository @Inject constructor(
             )
         }
     }
+
+    override suspend fun recordPlay(songId: String): Result<Unit> = runCatching {
+        homeApiService.recordPlay(RecordPlayRequestDto(songId))
+    }
 }
