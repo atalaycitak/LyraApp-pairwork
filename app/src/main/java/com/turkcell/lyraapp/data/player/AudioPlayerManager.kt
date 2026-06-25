@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.data.player
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.turkcell.lyraapp.data.common.ArtworkPalette
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -50,7 +52,7 @@ class AudioPlayerManager @Inject constructor(
                     if (player.isPlaying) startPositionPolling()
                 }
                 Player.STATE_ENDED -> {
-                    positionPollingJob?.cancel()
+                    cancelPositionPolling()
                     _playerState.update { it.copy(isPlaying = false, currentPositionMs = 0L) }
                 }
                 else -> Unit
@@ -61,7 +63,7 @@ class AudioPlayerManager @Inject constructor(
             if (isPlaying) {
                 startPositionPolling()
             } else {
-                positionPollingJob?.cancel()
+                cancelPositionPolling()
             }
             _playerState.update { it.copy(isPlaying = isPlaying) }
         }
@@ -81,7 +83,7 @@ class AudioPlayerManager @Inject constructor(
         scope.launch {
             _playerState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            positionPollingJob?.cancel()
+            cancelPositionPolling()
             player.stop()
             player.clearMediaItems()
 
@@ -110,7 +112,15 @@ class AudioPlayerManager @Inject constructor(
             _playerState.update { it.copy(isLoading = false) }
             urlResult
                 .onSuccess { streamData ->
-                    val mediaItem = MediaItem.fromUri(streamData.url)
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(streamData.url)
+                        .setMediaMetadata(
+                            MediaMetadata.Builder()
+                                .setTitle(song.title)
+                                .setArtist(song.artist)
+                                .build()
+                        )
+                        .build()
                     player.setMediaItem(mediaItem)
                     player.prepare()
                     player.play()
@@ -133,22 +143,37 @@ class AudioPlayerManager @Inject constructor(
         player.seekTo(positionMs)
     }
 
+    /**
+     * Dinleyici ve polling islerini temizler.
+     * ExoPlayer'in yasam dongusu PlaybackService tarafindan yonetildigi icin
+     * burada player.release() cagirilmaz.
+     */
     override fun release() {
-        positionPollingJob?.cancel()
-        positionPollingJob = null
+        cancelPositionPolling()
         player.removeListener(playerListener)
+        player.stop()
+        player.clearMediaItems()
         scope.cancel()
     }
 
-    private fun startPositionPolling() {
+    private fun cancelPositionPolling() {
         positionPollingJob?.cancel()
+        positionPollingJob = null
+    }
+
+    private fun startPositionPolling() {
+        cancelPositionPolling()
         positionPollingJob = scope.launch {
-            while (true) {
-                delay(500L)
+            while (isActive) {
+                delay(POLLING_INTERVAL_MS)
                 if (!player.isPlaying) break
                 _playerState.update { it.copy(currentPositionMs = player.currentPosition) }
             }
         }
+    }
+
+    private companion object {
+        private const val POLLING_INTERVAL_MS = 500L
     }
 
 }
