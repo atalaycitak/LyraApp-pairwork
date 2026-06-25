@@ -5,4 +5,5 @@ package com.turkcell.lyraapp.data.profile
  */
 interface ProfileRepository {
     suspend fun getProfileInfo(): Result<UserProfile>
+    suspend fun updateProfile(firstName: String, lastName: String, birthDate: String): Result<Unit>
 }

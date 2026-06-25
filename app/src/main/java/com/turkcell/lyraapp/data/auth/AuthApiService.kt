@@ -17,7 +17,4 @@ interface AuthApiService {
 
     @POST("api/v1/auth/logout")
     suspend fun logout(): Response<LogoutResponse>
-
-    @POST("api/v1/me/update-informations")
-    suspend fun updateProfile(@Body request: UpdateProfileRequest): Response<UpdateProfileResponse>
 }

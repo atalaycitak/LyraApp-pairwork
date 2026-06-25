@@ -377,3 +377,13 @@
 - Uygulama: `HomeApiService` içerisine `recordPlay` endpoint'i ve modeli eklendi. `HomeRepository` bu ucu sarmalayacak şekilde güncellendi. Uygulamanın merkezi oynatma denetleyicisi olan `AudioPlayerManager`, Hilt üzerinden `HomeRepository` bağımlılığını alacak şekilde güncellendi. Yeni mimaride `playSong(songId)` metodu, şarkı başarıyla yüklenip `player.play()` çağrıldıktan hemen sonra arka planda fire-and-forget olarak `homeRepository.recordPlay(songId)` fonksiyonunu tetikler.
 
 - Sebep: Kullanıcının dinlediği şarkıların backend tarafındaki "Son Çalınanlar" (`recently-played`) listesini besleyebilmesi ve kişisel öneri algoritmalarının dinamik olarak güncellenmesi.
+
+### Kullanıcı Profili (Me) ve Güncelleme
+
+- Seçim: **`ProfileApiService` oluşturulup, `GET /api/v1/me` ve `POST /api/v1/me/update-informations` uçlarının buraya taşınması.**
+
+- Son Güncelleme Tarihi: 25.06.2026
+
+- Uygulama: `AuthApiService` içerisindeki `updateProfile` ucu mantıksal bir ayrıştırma ile yeni oluşturulan `ProfileApiService` dosyasına taşındı. `ProfileScreen` ve `ProfileViewModel`, MVI mimarisine sadık kalınarak profil bilgilerini `GET /me` üzerinden alacak şekilde bağlandı. `UserProfile` domain modeline gerçek `phone` ve `firstName`/`lastName` gibi alanlar eklendi. Ayrıca UI katmanına kullanıcının bilgilerini düzenleyebileceği bir **Düzenle** butonu (Edit) ve güncellemelerin yapılabildiği bir **EditProfileDialog** entegre edildi.
+
+- Sebep: Profil sayfasındaki tüm bilgilerin sahte (mock) olması engelini aşarak backend ile tam entegre (read & write) profil yönetimi deneyimini sağlamak.

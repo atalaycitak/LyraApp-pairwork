@@ -5,6 +5,10 @@ package com.turkcell.lyraapp.data.profile
  */
 data class UserProfile(
     val id: String,
+    val phone: String,
+    val firstName: String?,
+    val lastName: String?,
+    val birthDate: String?,
     val name: String,
     val username: String,
     val initials: String,

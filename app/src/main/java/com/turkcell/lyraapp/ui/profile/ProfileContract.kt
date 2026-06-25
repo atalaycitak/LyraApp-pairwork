@@ -5,7 +5,9 @@ import com.turkcell.lyraapp.data.profile.UserProfile
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val profileInfo: UserProfile? = null,
-    val isDarkMode: Boolean = false
+    val isDarkMode: Boolean = true,
+    val showEditDialog: Boolean = false,
+    val isSaving: Boolean = false
 )
 
 sealed interface ProfileIntent {
@@ -17,6 +19,14 @@ sealed interface ProfileIntent {
     data object OnNotificationsClick : ProfileIntent
     data object OnPrivacyClick : ProfileIntent
     data object OnHelpClick : ProfileIntent
+
+    data object OnEditProfileClick : ProfileIntent
+    data object OnDismissEditDialog : ProfileIntent
+    data class OnSaveProfile(
+        val firstName: String,
+        val lastName: String,
+        val birthDate: String
+    ) : ProfileIntent
 }
 
 sealed interface ProfileEffect {

@@ -1,6 +1,8 @@
 package com.turkcell.lyraapp.data.auth
 
 import com.turkcell.lyraapp.data.common.TokenManager
+import com.turkcell.lyraapp.data.profile.ProfileApiService
+import com.turkcell.lyraapp.data.profile.UpdateProfileRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -9,6 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class RetrofitAuthRepository @Inject constructor(
     private val apiService: AuthApiService,
+    private val profileApiService: ProfileApiService,
     private val tokenManager: TokenManager
 ) : AuthRepository {
 
@@ -47,7 +50,7 @@ class RetrofitAuthRepository @Inject constructor(
         birthDate: String
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.updateProfile(
+            val response = profileApiService.updateProfile(
                 UpdateProfileRequest(firstName, lastName, birthDate)
             )
             if (response.isSuccessful) {

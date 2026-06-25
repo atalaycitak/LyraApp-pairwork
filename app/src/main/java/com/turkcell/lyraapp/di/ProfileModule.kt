@@ -1,6 +1,6 @@
 package com.turkcell.lyraapp.di
 
-import com.turkcell.lyraapp.data.profile.MockProfileRepository
+import com.turkcell.lyraapp.data.profile.RetrofitProfileRepository
 import com.turkcell.lyraapp.data.profile.ProfileRepository
 import dagger.Binds
 import dagger.Module
@@ -15,6 +15,6 @@ abstract class ProfileModule {
     @Binds
     @Singleton
     abstract fun bindProfileRepository(
-        mockProfileRepository: MockProfileRepository
+        retrofitProfileRepository: RetrofitProfileRepository
     ): ProfileRepository
 }

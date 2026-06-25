@@ -44,15 +44,6 @@ data class UserDto(
     @SerializedName("profileCompleted") val profileCompleted: Boolean
 )
 
-data class UpdateProfileRequest(
-    @SerializedName("firstName") val firstName: String,
-    @SerializedName("lastName") val lastName: String,
-    @SerializedName("birthDate") val birthDate: String
-)
-
-data class UpdateProfileResponse(
-    @SerializedName("data") val data: UserDto
-)
 
 data class LogoutResponse(
     @SerializedName("data") val data: LogoutData
