@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.turkcell.lyraapp.data.search.SearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,47 +34,57 @@ class SearchViewModel @Inject constructor(
     private val _effect = Channel<SearchEffect>(Channel.BUFFERED)
     val effect: Flow<SearchEffect> = _effect.receiveAsFlow()
 
+    private var searchJob: Job? = null
+
     init {
-        loadFeed()
+        viewModelScope.launch { executeSearch(null) }
     }
 
     fun onIntent(intent: SearchIntent) {
         when (intent) {
             is SearchIntent.QueryChanged -> {
                 _uiState.update { it.copy(searchQuery = intent.value) }
-                loadFeed(intent.value)
+                searchJob?.cancel()
+                searchJob = viewModelScope.launch {
+                    delay(DEBOUNCE_MS)
+                    executeSearch(intent.value)
+                }
             }
             is SearchIntent.FilterSelected -> _uiState.update { it.copy(selectedFilterId = intent.filterId) }
             is SearchIntent.ResultClicked -> navigateToPlayer(intent.songId)
-            is SearchIntent.Retry -> loadFeed(_uiState.value.searchQuery)
+            is SearchIntent.Retry -> {
+                searchJob?.cancel()
+                viewModelScope.launch { executeSearch(_uiState.value.searchQuery) }
+            }
         }
     }
 
-    private fun loadFeed(query: String? = null) {
-        if (_uiState.value.isLoading) return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val result = searchRepository.getSearchFeed(query)
-            _uiState.update { it.copy(isLoading = false) }
-            result
-                .onSuccess { feed ->
-                    _uiState.update {
-                        it.copy(
-                            filters = feed.filters,
-                            genres = feed.genres,
-                            results = feed.results,
-                        )
-                    }
+    private suspend fun executeSearch(query: String?) {
+        _uiState.update { it.copy(isLoading = true) }
+        val result = searchRepository.getSearchFeed(query)
+        _uiState.update { it.copy(isLoading = false) }
+        result
+            .onSuccess { feed ->
+                _uiState.update {
+                    it.copy(
+                        filters = feed.filters,
+                        genres = feed.genres,
+                        results = feed.results,
+                    )
                 }
-                .onFailure { error ->
-                    _effect.send(SearchEffect.ShowError(error.message ?: "Arama ekranı yüklenemedi."))
-                }
-        }
+            }
+            .onFailure { error ->
+                _effect.send(SearchEffect.ShowError(error.message ?: "Arama ekranı yüklenemedi."))
+            }
     }
 
     private fun navigateToPlayer(songId: String) {
         viewModelScope.launch {
             _effect.send(SearchEffect.NavigateToPlayer(songId))
         }
+    }
+
+    private companion object {
+        private const val DEBOUNCE_MS = 300L
     }
 }

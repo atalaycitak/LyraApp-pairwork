@@ -13,8 +13,11 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        // Don't add token to auth endpoints to avoid issues
-        if (originalRequest.url.encodedPath.contains("/auth/otp/")) {
+        // /auth/otp/* ve /auth/refresh endpoint'lerine token eklenmez.
+        // OTP: henuz oturum acilmamistir. Refresh: TokenAuthenticator refresh token'i
+        // body'de gonderir, burada eski access token gonderilmesi yenileme dongusunu bozar.
+        if (originalRequest.url.encodedPath.contains("/auth/otp/") ||
+            originalRequest.url.encodedPath.contains("/auth/refresh")) {
             return chain.proceed(originalRequest)
         }
 
