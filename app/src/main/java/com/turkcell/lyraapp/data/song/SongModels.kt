@@ -31,6 +31,13 @@ data class SongsResponseDto(
 )
 
 /**
+ * GET /api/v1/songs/{id} yanıt zarfı.
+ */
+data class SongDetailResponseDto(
+    val data: SongDto,
+)
+
+/**
  * GET /api/v1/songs/{id}/stream-url yanıt zarfı.
  *
  * [url] doğrudan ExoPlayer'a beslenir; TTL 300 saniyedir (bkz. api-overview.md).

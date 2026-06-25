@@ -3,7 +3,7 @@
 > Bir ekranın State + Intent + Effect tanımları için **tek doğruluk kaynağıdır**.
 > Genel akış için bkz. [mvi-overview.md](mvi-overview.md).
 >
-> Referans: `ui/auth/login/LoginContract.kt`.
+> Referans: `ui/auth/phone/PhoneContract.kt`.
 
 ---
 

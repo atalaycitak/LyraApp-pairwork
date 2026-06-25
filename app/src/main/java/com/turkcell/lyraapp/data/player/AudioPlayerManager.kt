@@ -2,6 +2,8 @@ package com.turkcell.lyraapp.data.player
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -63,6 +65,7 @@ class AudioPlayerManager @Inject constructor(
     private var player: Player? = null
     private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
     private var disposed = false
+    private var wasPlayingBeforeInterruption = false
 
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -83,12 +86,33 @@ class AudioPlayerManager @Inject constructor(
                 startPositionPolling()
             } else {
                 cancelPositionPolling()
+                if (player?.playbackState == Player.STATE_READY && _playerState.value.songId != null) {
+                    wasPlayingBeforeInterruption = true
+                }
             }
             _playerState.update { it.copy(isPlaying = isPlaying) }
         }
     }
 
+    private val headsetReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(ctx: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_HEADSET_PLUG &&
+                intent.getIntExtra("state", 0) == 1 &&
+                wasPlayingBeforeInterruption &&
+                player?.isPlaying == false &&
+                !disposed
+            ) {
+                player?.play()
+                wasPlayingBeforeInterruption = false
+            }
+        }
+    }
+
     init {
+        context.registerReceiver(
+            headsetReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
         initializeController()
     }
 
@@ -229,6 +253,7 @@ class AudioPlayerManager @Inject constructor(
     override fun release() {
         if (disposed) return
         disposed = true
+        try { context.unregisterReceiver(headsetReceiver) } catch (_: Exception) {}
         cancelPositionPolling()
         player?.removeListener(playerListener)
         player?.stop()

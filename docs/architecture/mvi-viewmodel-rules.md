@@ -3,7 +3,7 @@
 > ViewModel, UI bağlama (Route/Screen) ve DI için **tek doğruluk kaynağıdır**.
 > Sözleşme için bkz. [mvi-contracts.md](mvi-contracts.md), genel akış için [mvi-overview.md](mvi-overview.md).
 >
-> Referans: `ui/auth/login/LoginViewModel.kt`, `LoginScreen.kt`, `di/AuthModule.kt`.
+> Referans: `ui/auth/phone/PhoneViewModel.kt`, `PhoneScreen.kt`, `di/AuthModule.kt`.
 
 ---
 

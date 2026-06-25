@@ -5,7 +5,7 @@
 > veri akışı ve katman sorumlulukları **zorunludur**. Sözleşme (Contract) ve ViewModel'e özel
 > kurallar için bkz. [mvi-contracts.md](mvi-contracts.md) ve [mvi-viewmodel-rules.md](mvi-viewmodel-rules.md).
 >
-> Referans implementasyon: Login ekranı (`ui/auth/login/`).
+> Referans implementasyon: Telefon dogrulama ekranlari (`ui/auth/phone/` ve `ui/auth/otp/`).
 
 ---
 
@@ -70,8 +70,8 @@ com.turkcell.lyraapp/
     └── <X>Module.kt          // @Module @InstallIn(SingletonComponent) @Binds
 ```
 
-Referans karşılıkları: `LoginContract.kt`, `LoginViewModel.kt`, `LoginScreen.kt`,
-`data/auth/AuthRepository.kt`, `data/auth/FakeAuthRepository.kt`, `di/AuthModule.kt`.
+Referans karşılıkları: `PhoneContract.kt`, `PhoneViewModel.kt`, `PhoneScreen.kt`,
+`data/auth/AuthRepository.kt`, `data/auth/RetrofitAuthRepository.kt`, `di/AuthModule.kt`.
 
 ---
 
