@@ -4,7 +4,7 @@ package com.turkcell.lyraapp.ui.nowplaying
  * Now Playing ekranının MVI sözleşmesi: UiState + Intent + Effect (bkz. mvi-contracts.md).
  *
  * Oynatma durumu [AudioPlayerManager] uzerinden global olarak yonetilir;
- * karistirma/tekrarlama durumlari ekran seviyesinde yerel state ile tutulur.
+ * karistirma/tekrarlama ve favori durumlari ViewModel state'inde tutulur.
  */
 data class NowPlayingUiState(
     val isLoading: Boolean = false,
@@ -18,6 +18,9 @@ data class NowPlayingUiState(
     val isPlaying: Boolean = true,
     val isDownloaded: Boolean = false,
     val downloadProgress: Float? = null,
+    val isFavorite: Boolean = false,
+    val isShuffleOn: Boolean = false,
+    val isRepeatOn: Boolean = false,
 )
 
 /**
@@ -29,6 +32,12 @@ sealed interface NowPlayingIntent {
 
     /** Favori kalp ikonuna tıklandı. */
     data object ToggleFavorite : NowPlayingIntent
+
+    /** Karıştırma modu değiştirildi. */
+    data object ToggleShuffle : NowPlayingIntent
+
+    /** Tekrarlama modu değiştirildi. */
+    data object ToggleRepeat : NowPlayingIntent
 
     /** Önceki parça butonuna tıklandı. */
     data object SkipPrevious : NowPlayingIntent

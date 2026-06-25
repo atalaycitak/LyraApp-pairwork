@@ -25,6 +25,9 @@ class PlaybackService : MediaSessionService() {
     @Inject
     lateinit var player: ExoPlayer
 
+    @Inject
+    lateinit var audioPlayerManager: AudioPlayerManager
+
     private var mediaSession: MediaSession? = null
 
     override fun onCreate() {
@@ -46,6 +49,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        audioPlayerManager.release()
         mediaSession?.run {
             player.release()
             release()

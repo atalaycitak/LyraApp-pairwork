@@ -49,12 +49,20 @@ class SongDownloadManager @Inject constructor(
 
         statusFlow.value = DownloadStatus.Downloading(0f)
 
+        val downloadsDir = File(context.filesDir, "downloads")
+        if (!downloadsDir.exists()) downloadsDir.mkdirs()
+        val outputFile = File(downloadsDir, "$songId.audio")
+
         try {
             val songResult = songRepository.getSongById(songId)
-            val song = songResult.getOrNull() ?: throw Exception("Şarkı bilgisi alınamadı.")
+            val song = songResult.getOrElse { error ->
+                throw Exception("Şarkı bilgisi alınamadı: ${error.message}", error)
+            }
 
             val urlResult = songRepository.getStreamUrl(songId)
-            val streamUrl = urlResult.getOrNull()?.url ?: throw Exception("İndirme URL'si alınamadı.")
+            val streamUrl = urlResult.getOrElse { error ->
+                throw Exception("İndirme URL'si alınamadı: ${error.message}", error)
+            }.url
 
             val request = Request.Builder().url(streamUrl).build()
             val response = okHttpClient.newCall(request).execute()
@@ -63,11 +71,6 @@ class SongDownloadManager @Inject constructor(
 
             val body = response.body ?: throw Exception("Boş yanıt gövdesi.")
             val contentLength = body.contentLength()
-
-            val downloadsDir = File(context.filesDir, "downloads")
-            if (!downloadsDir.exists()) downloadsDir.mkdirs()
-
-            val outputFile = File(downloadsDir, "$songId.audio")
 
             body.byteStream().use { input ->
                 FileOutputStream(outputFile).use { output ->
@@ -101,6 +104,7 @@ class SongDownloadManager @Inject constructor(
             statusFlow.value = DownloadStatus.Completed
 
         } catch (e: Exception) {
+            if (outputFile.exists()) outputFile.delete()
             statusFlow.value = DownloadStatus.Failed(e.message ?: "Bilinmeyen indirme hatası.")
         }
     }

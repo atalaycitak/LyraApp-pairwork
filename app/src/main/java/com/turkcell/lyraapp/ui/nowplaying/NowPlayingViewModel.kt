@@ -23,9 +23,6 @@ import javax.inject.Inject
  * [songId] navigasyon argumanindan [SavedStateHandle] ile alinir.
  * Sarki metadatasi ve oynatma [PlayerController] uzerinden saglanir;
  * ViewModel dogrudan ExoPlayer veya Context tutmaz.
- *
- * Karistirma/tekrarlama durumlari is mantigi icermedigi icin
- * ekran seviyesinde yerel state ile yonetilir (bkz. NowPlayingScreen).
  */
 @HiltViewModel
 class NowPlayingViewModel @Inject constructor(
@@ -87,7 +84,9 @@ class NowPlayingViewModel @Inject constructor(
     fun onIntent(intent: NowPlayingIntent) {
         when (intent) {
             is NowPlayingIntent.TogglePlayPause -> playerController.togglePlayPause()
-            is NowPlayingIntent.ToggleFavorite  -> { /* Favori API'si bu iterasyonda yok */ }
+            is NowPlayingIntent.ToggleFavorite  -> _uiState.update { it.copy(isFavorite = !it.isFavorite) }
+            is NowPlayingIntent.ToggleShuffle   -> _uiState.update { it.copy(isShuffleOn = !it.isShuffleOn) }
+            is NowPlayingIntent.ToggleRepeat    -> _uiState.update { it.copy(isRepeatOn = !it.isRepeatOn) }
             is NowPlayingIntent.SkipPrevious    -> playerController.seekTo(0L)
             is NowPlayingIntent.SkipNext        -> { /* Kuyruk yonetimi bu iterasyonda yok */ }
             is NowPlayingIntent.SeekTo          -> playerController.seekTo(intent.positionMs)

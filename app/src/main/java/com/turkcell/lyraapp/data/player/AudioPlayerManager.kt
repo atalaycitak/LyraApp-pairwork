@@ -62,6 +62,7 @@ class AudioPlayerManager @Inject constructor(
 
     private var player: Player? = null
     private var controllerFuture: com.google.common.util.concurrent.ListenableFuture<MediaController>? = null
+    private var disposed = false
 
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -96,6 +97,7 @@ class AudioPlayerManager @Inject constructor(
         controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
         controllerFuture?.addListener(
             {
+                if (disposed) return@addListener
                 player = controllerFuture?.get()
                 player?.addListener(playerListener)
             },
@@ -104,6 +106,8 @@ class AudioPlayerManager @Inject constructor(
     }
 
     override fun playSong(songId: String) {
+        if (disposed) return
+
         if (_playerState.value.songId == songId) {
             // Şarkı zaten yüklü, çalmıyorsa başlat
             if (player?.isPlaying == false) player?.play()
@@ -112,9 +116,10 @@ class AudioPlayerManager @Inject constructor(
 
         scope.launch {
             // MediaController asenkron yüklendiği için hazır olmasını bekle
-            while (player == null) {
+            while (player == null && !disposed) {
                 delay(50)
             }
+            if (disposed) return@launch
 
             _playerState.update { it.copy(isLoading = true, errorMessage = null) }
 
@@ -199,6 +204,7 @@ class AudioPlayerManager @Inject constructor(
     }
 
     override fun togglePlayPause() {
+        if (disposed) return
         if (player?.isPlaying == true) {
             player?.pause()
         } else {
@@ -207,6 +213,7 @@ class AudioPlayerManager @Inject constructor(
     }
 
     override fun seekTo(positionMs: Long) {
+        if (disposed) return
         player?.seekTo(positionMs)
     }
 
@@ -214,17 +221,27 @@ class AudioPlayerManager @Inject constructor(
      * Dinleyici ve polling islerini temizler.
      * ExoPlayer'in yasam dongusu PlaybackService tarafindan yonetildigi icin
      * burada player.release() cagirilmaz, Controller serbest birakilir.
+     *
+     * Idempotent: birden fazla kez cagrilabilir (PlaybackService.onDestroy +
+     * LyraApplication.onTerminate). Ilk cagridan sonraki tum public metotlar
+     * disposed kontrolu ile early-return yapar.
      */
     override fun release() {
+        if (disposed) return
+        disposed = true
         cancelPositionPolling()
         player?.removeListener(playerListener)
         player?.stop()
         player?.clearMediaItems()
         controllerFuture?.let { MediaController.releaseFuture(it) }
+        controllerFuture = null
+        player = null
         scope.cancel()
+        _playerState.update { GlobalPlayerState() }
     }
 
     override fun downloadCurrentSong() {
+        if (disposed) return
         val currentSongId = _playerState.value.songId ?: return
         scope.launch {
             songDownloadManager.downloadSong(currentSongId)
@@ -233,6 +250,7 @@ class AudioPlayerManager @Inject constructor(
     }
 
     override fun removeDownload() {
+        if (disposed) return
         val currentSongId = _playerState.value.songId ?: return
         scope.launch {
             songDownloadManager.removeDownload(currentSongId)

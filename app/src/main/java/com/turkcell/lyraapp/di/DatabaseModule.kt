@@ -24,7 +24,8 @@ object DatabaseModule {
             context,
             LyraDatabase::class.java,
             "lyra_database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+         .build()
     }
 
     @Provides

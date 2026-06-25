@@ -31,9 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -115,10 +113,6 @@ fun NowPlayingScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    var isFavorite by remember { mutableStateOf(false) }
-    var isShuffleOn by remember { mutableStateOf(false) }
-    var isRepeatOn by remember { mutableStateOf(false) }
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -162,10 +156,10 @@ fun NowPlayingScreen(
                 TrackInfo(
                     title = state.trackTitle,
                     artist = state.artistName,
-                    isFavorite = isFavorite,
+                    isFavorite = state.isFavorite,
                     isDownloaded = state.isDownloaded,
                     downloadProgress = state.downloadProgress,
-                    onFavoriteClick = { isFavorite = !isFavorite },
+                    onFavoriteClick = { onIntent(NowPlayingIntent.ToggleFavorite) },
                     onDownloadClick = { onIntent(NowPlayingIntent.DownloadSong) }
                 )
 
@@ -181,13 +175,13 @@ fun NowPlayingScreen(
 
                 PlaybackControls(
                     isPlaying = state.isPlaying,
-                    isShuffleOn = isShuffleOn,
-                    isRepeatOn = isRepeatOn,
+                    isShuffleOn = state.isShuffleOn,
+                    isRepeatOn = state.isRepeatOn,
                     onTogglePlayPause = { onIntent(NowPlayingIntent.TogglePlayPause) },
                     onSkipPrevious = { onIntent(NowPlayingIntent.SkipPrevious) },
                     onSkipNext = { onIntent(NowPlayingIntent.SkipNext) },
-                    onToggleShuffle = { isShuffleOn = !isShuffleOn },
-                    onToggleRepeat = { isRepeatOn = !isRepeatOn },
+                    onToggleShuffle = { onIntent(NowPlayingIntent.ToggleShuffle) },
+                    onToggleRepeat = { onIntent(NowPlayingIntent.ToggleRepeat) },
                 )
 
                 Spacer(Modifier.weight(1f))
@@ -551,6 +545,8 @@ private val previewState = NowPlayingUiState(
     durationMs = 223_000L,
     currentPositionMs = 93_000L,
     isPlaying = true,
+    isFavorite = true,
+    isShuffleOn = true,
 )
 
 @Preview(name = "NowPlaying - Dark", showBackground = true, showSystemUi = true)
