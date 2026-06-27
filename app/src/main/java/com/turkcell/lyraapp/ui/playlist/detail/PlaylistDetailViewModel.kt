@@ -34,9 +34,51 @@ class PlaylistDetailViewModel @Inject constructor(
             PlaylistDetailIntent.OnBackClick -> sendEffect(PlaylistDetailEffect.NavigateBack)
             PlaylistDetailIntent.OnDownloadClick -> showSnackbar("İndirme başlatıldı")
             PlaylistDetailIntent.OnMoreClick -> showSnackbar("Daha fazla seçenek")
-            PlaylistDetailIntent.OnPlayClick -> showSnackbar("Çalma listesi oynatılıyor")
-            PlaylistDetailIntent.OnShuffleClick -> showSnackbar("Karışık çalma açıldı")
+            PlaylistDetailIntent.OnPlayClick -> playPlaylist()
+            PlaylistDetailIntent.OnShuffleClick -> shufflePlaylist()
             is PlaylistDetailIntent.OnRemoveSongClick -> removeSong(intent.songId)
+            PlaylistDetailIntent.OnRenameClick -> {
+                _uiState.update { it.copy(showRenameDialog = true) }
+            }
+            PlaylistDetailIntent.OnDismissRenameDialog -> {
+                _uiState.update { it.copy(showRenameDialog = false) }
+            }
+            is PlaylistDetailIntent.OnConfirmRename -> renamePlaylist(intent.newName)
+        }
+    }
+
+    private fun playPlaylist() {
+        val detail = _uiState.value.playlistDetail ?: return
+        if (detail.songs.isNotEmpty()) {
+            navigateToPlayer(detail.songs.first().id)
+        } else {
+            showSnackbar("Çalma listesi boş.")
+        }
+    }
+
+    private fun shufflePlaylist() {
+        val detail = _uiState.value.playlistDetail ?: return
+        if (detail.songs.isNotEmpty()) {
+            navigateToPlayer(detail.songs.random().id)
+        } else {
+            showSnackbar("Çalma listesi boş.")
+        }
+    }
+
+    private fun renamePlaylist(newName: String) {
+        val playlistId = currentPlaylistId ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRenaming = true) }
+            val result = playlistRepository.renamePlaylist(playlistId, newName)
+            result.onSuccess {
+                _uiState.update { it.copy(isRenaming = false, showRenameDialog = false) }
+                sendEffect(PlaylistDetailEffect.ShowSnackbar("Çalma listesi ismi değiştirildi"))
+                // Yeniden yükle
+                onIntent(PlaylistDetailIntent.LoadPlaylist(playlistId))
+            }.onFailure { error ->
+                _uiState.update { it.copy(isRenaming = false) }
+                sendEffect(PlaylistDetailEffect.ShowSnackbar(error.message ?: "İsim değiştirilemedi"))
+            }
         }
     }
 

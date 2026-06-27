@@ -52,7 +52,11 @@ class NowPlayingViewModel @Inject constructor(
                         currentPositionMs = globalState.currentPositionMs,
                         durationMs = globalState.durationMs,
                         isLoading = globalState.isLoading,
-                        isDownloaded = globalState.isDownloaded
+                        isDownloaded = globalState.isDownloaded,
+                        isPlayingAd = globalState.isPlayingAd,
+                        adTitle = globalState.adTitle,
+                        adAdvertiser = globalState.adAdvertiser,
+                        adDurationMs = globalState.adDurationMs
                     )
                 }
                 
@@ -88,7 +92,7 @@ class NowPlayingViewModel @Inject constructor(
             is NowPlayingIntent.ToggleShuffle   -> _uiState.update { it.copy(isShuffleOn = !it.isShuffleOn) }
             is NowPlayingIntent.ToggleRepeat    -> _uiState.update { it.copy(isRepeatOn = !it.isRepeatOn) }
             is NowPlayingIntent.SkipPrevious    -> playerController.seekTo(0L)
-            is NowPlayingIntent.SkipNext        -> { /* Kuyruk yonetimi bu iterasyonda yok */ }
+            is NowPlayingIntent.SkipNext        -> playerController.playNext()
             is NowPlayingIntent.SeekTo          -> playerController.seekTo(intent.positionMs)
             is NowPlayingIntent.NavigateBack    -> viewModelScope.launch { _effect.send(NowPlayingEffect.NavigateBack) }
             is NowPlayingIntent.Retry           -> playerController.playSong(songId)

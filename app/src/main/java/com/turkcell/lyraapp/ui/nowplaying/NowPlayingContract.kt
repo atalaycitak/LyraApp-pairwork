@@ -21,6 +21,11 @@ data class NowPlayingUiState(
     val isFavorite: Boolean = false,
     val isShuffleOn: Boolean = false,
     val isRepeatOn: Boolean = false,
+    // Reklam alanlari
+    val isPlayingAd: Boolean = false,
+    val adTitle: String? = null,
+    val adAdvertiser: String? = null,
+    val adDurationMs: Long = 0L
 )
 
 /**

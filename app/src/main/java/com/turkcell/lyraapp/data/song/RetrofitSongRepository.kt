@@ -25,6 +25,13 @@ class RetrofitSongRepository @Inject constructor(
     }
 
     override suspend fun getStreamUrl(id: String): Result<StreamUrlDataDto> = runCatching {
-        api.getStreamUrl(id).data
+        try {
+            api.getStreamUrl(id).data
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 403) {
+                throw Exception("Bu işlemi gerçekleştirebilmek için Premium üye olmalısınız.")
+            }
+            throw e
+        }
     }
 }

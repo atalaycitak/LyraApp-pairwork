@@ -88,6 +88,10 @@ fun LibraryRoute(
         }
     }
 
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+        viewModel.onIntent(LibraryIntent.Retry)
+    }
+
     LibraryScreen(
         state = uiState,
         onIntent = viewModel::onIntent,

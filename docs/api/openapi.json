@@ -242,7 +242,7 @@
                         "description": "Recently played songs",
                         "content": {
                             "application/json": {
-                                "schema": { "$ref": "#/components/schemas/SongsPage" }
+                                "schema": { "$ref": "#/components/schemas/SongArray" }
                             }
                         }
                     }
@@ -266,7 +266,7 @@
                         "description": "Personalised songs",
                         "content": {
                             "application/json": {
-                                "schema": { "$ref": "#/components/schemas/SongsPage" }
+                                "schema": { "$ref": "#/components/schemas/SongArray" }
                             }
                         }
                     }
@@ -290,7 +290,7 @@
                         "description": "Recommended songs",
                         "content": {
                             "application/json": {
-                                "schema": { "$ref": "#/components/schemas/SongsPage" }
+                                "schema": { "$ref": "#/components/schemas/SongArray" }
                             }
                         }
                     }
@@ -310,7 +310,24 @@
                     }
                 },
                 "responses": {
-                    "200": { "description": "Play recorded" }
+                    "201": {
+                        "description": "Play recorded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "recorded": { "type": "boolean", "example": true }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -349,7 +366,7 @@
                     }
                 },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Created playlist",
                         "content": {
                             "application/json": {
@@ -387,7 +404,24 @@
                     }
                 },
                 "responses": {
-                    "200": { "description": "Track added" }
+                    "201": {
+                        "description": "Track added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "added": { "type": "boolean", "example": true }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -412,7 +446,24 @@
                     }
                 ],
                 "responses": {
-                    "200": { "description": "Track removed" }
+                    "200": {
+                        "description": "Track removed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "removed": { "type": "boolean", "example": true }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -796,6 +847,15 @@
                     }
                 }
             },
+            "SongArray": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": { "$ref": "#/components/schemas/Song" }
+                    }
+                }
+            },
             "StreamUrlPayload": {
                 "type": "object",
                 "properties": {
@@ -828,6 +888,7 @@
                     "id": { "type": "string", "example": "p_late-night-drive" },
                     "name": { "type": "string", "example": "Late Night Drive" },
                     "description": { "type": "string", "nullable": true },
+                    "ownerId": { "type": "string", "nullable": true, "description": "Owner user ID; null for public/system playlists." },
                     "createdAt": { "type": "string", "format": "date-time" }
                 }
             },

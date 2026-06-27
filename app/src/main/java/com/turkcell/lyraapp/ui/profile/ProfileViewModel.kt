@@ -2,7 +2,9 @@ package com.turkcell.lyraapp.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.turkcell.lyraapp.data.auth.AuthRepository
 import com.turkcell.lyraapp.data.profile.ProfileRepository
+import com.turkcell.lyraapp.data.theme.ThemePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +18,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val themePreferences: ThemePreferences,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -27,13 +31,24 @@ class ProfileViewModel @Inject constructor(
 
     init {
         onIntent(ProfileIntent.LoadProfile)
+        
+        viewModelScope.launch {
+            themePreferences.isDarkModeFlow.collect { isDark ->
+                // Null ise varsayılan olarak cihaz temasını bilmediğimizden uiState'i 
+                // güncellemeyebiliriz veya true/false olarak bırakabiliriz, ancak null işlenmiyor.
+                // İdealde burada null durumu için sistem teması alınmalı. Şimdilik UI sadece toggle yapabiliyor.
+                if (isDark != null) {
+                    _uiState.update { it.copy(isDarkMode = isDark) }
+                }
+            }
+        }
     }
 
     fun onIntent(intent: ProfileIntent) {
         when (intent) {
             is ProfileIntent.LoadProfile -> loadProfile()
             is ProfileIntent.OnThemeToggle -> {
-                _uiState.update { it.copy(isDarkMode = intent.isDarkMode) }
+                themePreferences.setDarkMode(intent.isDarkMode)
             }
             ProfileIntent.OnSettingsClick -> sendEffect(ProfileEffect.ShowSnackbar("Ayarlar tıklandı"))
             ProfileIntent.OnAudioQualityClick -> sendEffect(ProfileEffect.ShowSnackbar("Ses kalitesi seçenekleri"))
@@ -41,6 +56,7 @@ class ProfileViewModel @Inject constructor(
             ProfileIntent.OnNotificationsClick -> sendEffect(ProfileEffect.NavigateToNotifications)
             ProfileIntent.OnPrivacyClick -> sendEffect(ProfileEffect.ShowSnackbar("Gizlilik ayarları"))
             ProfileIntent.OnHelpClick -> sendEffect(ProfileEffect.ShowSnackbar("Yardım ve destek"))
+            ProfileIntent.OnPremiumBannerClick -> sendEffect(ProfileEffect.NavigateToPremiumPlans)
             
             ProfileIntent.OnEditProfileClick -> {
                 _uiState.update { it.copy(showEditDialog = true) }
@@ -49,6 +65,12 @@ class ProfileViewModel @Inject constructor(
                 _uiState.update { it.copy(showEditDialog = false) }
             }
             is ProfileIntent.OnSaveProfile -> saveProfile(intent.firstName, intent.lastName, intent.birthDate)
+            ProfileIntent.OnLogoutClick -> {
+                viewModelScope.launch {
+                    authRepository.logout()
+                    sendEffect(ProfileEffect.NavigateToLogin)
+                }
+            }
         }
     }
 

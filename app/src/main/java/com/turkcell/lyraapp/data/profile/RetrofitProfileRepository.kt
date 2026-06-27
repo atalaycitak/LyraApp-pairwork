@@ -23,7 +23,17 @@ class RetrofitProfileRepository @Inject constructor(
         val request = UpdateProfileRequest(firstName, lastName, birthDate)
         val response = profileApiService.updateProfile(request)
         if (!response.isSuccessful) {
-            throw Exception("Profil güncellenemedi: ${response.code()}")
+            throw Exception("Profil güncellenemedi: ${response.code()} ${response.message()}")
+        }
+    }
+
+    override suspend fun recordPlay(songId: String): Result<Boolean> = runCatching {
+        val request = RecordPlayRequestDto(songId)
+        val response = profileApiService.recordPlay(request)
+        if (response.isSuccessful) {
+            response.body()?.data?.recorded ?: false
+        } else {
+            false
         }
     }
 
@@ -51,10 +61,10 @@ class RetrofitProfileRepository @Inject constructor(
             name = calculatedName,
             username = userDto.phone.replace("+", ""),
             initials = calculatedInitials,
-            isPremium = true, // Dummy
-            playlistCount = 127, // Dummy
-            followersCount = "1.2B", // Dummy
-            followingCount = 348 // Dummy
+            membership = userDto.membership,
+            playlistCount = 127, // Dummy — API'da yok
+            followersCount = "1.2B", // Dummy — API'da yok
+            followingCount = 348 // Dummy — API'da yok
         )
     }
 }

@@ -21,7 +21,9 @@ enum class LyraDestination(val route: String) {
     Notifications("notifications"),
     NowPlaying("now_playing/{songId}"),
     CreatePlaylist("create_playlist"),
-    PlaylistDetail("playlist_detail/{playlistId}");
+    PlaylistDetail("playlist_detail/{playlistId}"),
+    PremiumPlans("premium_plans"),
+    Payment("payment/{planId}");
 
     companion object {
         /** NowPlaying rotası için songId'yi yerleştirilmiş tam rota döndürür. */
@@ -31,6 +33,8 @@ enum class LyraDestination(val route: String) {
         fun playlistDetailRoute(playlistId: String): String = "playlist_detail/$playlistId"
         
         fun otpRoute(phoneNumber: String): String = "otp/$phoneNumber"
+        
+        fun paymentRoute(planId: String): String = "payment/$planId"
     }
 }
 

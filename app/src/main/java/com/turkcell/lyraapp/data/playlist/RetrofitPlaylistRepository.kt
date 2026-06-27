@@ -61,6 +61,13 @@ class RetrofitPlaylistRepository @Inject constructor(
         playlistApiService.getPlaylistDetail(playlistId).data.toPlaylistDetailModel()
     }
 
+    override suspend fun renamePlaylist(playlistId: String, newName: String): Result<Unit> = runCatching {
+        if (newName.isBlank()) {
+            throw IllegalArgumentException("Çalma listesi adı boş olamaz.")
+        }
+        playlistApiService.renamePlaylist(playlistId, RenamePlaylistRequestDto(newName))
+    }
+
     private fun PlaylistWithSongsDto.toPlaylistDetailModel(): PlaylistDetailModel {
         val (startColor, endColor) = ArtworkPalette.colorPairForId(id)
         return PlaylistDetailModel(

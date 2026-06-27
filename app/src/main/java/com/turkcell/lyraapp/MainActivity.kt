@@ -9,12 +9,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.turkcell.lyraapp.data.theme.ThemePreferences
 import com.turkcell.lyraapp.ui.navigation.LyraNavHost
 import com.turkcell.lyraapp.ui.theme.LyraAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var themePreferences: ThemePreferences
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -25,7 +33,10 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
         enableEdgeToEdge()
         setContent {
-            LyraAppTheme {
+            val isDarkModeOverride by themePreferences.isDarkModeFlow.collectAsState()
+            val isDarkTheme = isDarkModeOverride ?: isSystemInDarkTheme()
+            
+            LyraAppTheme(darkTheme = isDarkTheme) {
                 LyraNavHost()
             }
         }

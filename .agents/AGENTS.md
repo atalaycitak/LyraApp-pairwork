@@ -56,3 +56,13 @@ Her implementasyon ya da plan sonrası aşağıdaki çıktı formatına uymak zo
 
 - Bu implementasyon ile alaklı varsa sık yapılan hatalar ve senin implementasyon sırasında aklına gelen önerilerini listelemek zorundasın.
 
+## 4) AI-NATIVE GELİŞTİRME PRENSİPLERİ (EXEMPLARY RULES)
+
+### 4.1) TDD (TEST-DRIVEN DEVELOPMENT) DAYATMASI
+Yeni bir ViewModel, Repository veya karmaşık bir iş mantığı (Business Logic) eklendiğinde, kod yazılmadan hemen önce JUnit testleri yazılmak ve `assembleDebug` / `testDebugUnitTest` ile testlerin geçtiği kanıtlanmak ZORUNDADIR. Ajanlar halüsinasyon riskini sıfıra indirmek için test güdümlü çalışmalıdır.
+
+### 4.2) DOKÜMANTASYON EŞZAMANLILIĞI
+Bir API ucu (Retrofit/Network) değiştirildiğinde, ajan `docs/api/openapi.json` ve `docs/api/api-overview.md` dosyalarını senkronize olarak GÜNCELLEMEK zorundadır. Kod ve doküman asla birbirinden kopamaz.
+
+### 4.3) SKILL (YETENEK) KULLANIMI
+LyraApp projesine özel kompleks işlemler için ajanlar `.agents/skills/` klasöründeki yetenekleri okumakla yükümlüdür (örneğin ekran üretimi veya Media3 denetimi). Ajanlar spesifik görevlere başlamadan önce ilgili yetenek dokümanını (SKILL.md) okumalıdır.

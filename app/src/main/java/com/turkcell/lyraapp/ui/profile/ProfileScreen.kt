@@ -23,7 +23,9 @@ import com.turkcell.lyraapp.ui.icons.LyraIcons
 
 @Composable
 fun ProfileRoute(
+    onNavigateToLogin: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToPremiumPlans: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -32,7 +34,13 @@ fun ProfileRoute(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                ProfileEffect.NavigateToNotifications -> onNavigateToNotifications()
+                is ProfileEffect.NavigateToNotifications -> onNavigateToNotifications()
+                is ProfileEffect.NavigateToPremiumPlans -> {
+                    onNavigateToPremiumPlans()
+                }
+                is ProfileEffect.NavigateToLogin -> {
+                    onNavigateToLogin()
+                }
                 is ProfileEffect.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(effect.message)
                 }
@@ -112,6 +120,14 @@ fun ProfileScreen(
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
                     ProfileStats(profile = profile)
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    PremiumBanner(
+                        profile = profile,
+                        onClick = { onIntent(ProfileIntent.OnPremiumBannerClick) }
+                    )
                 }
 
                 item {
@@ -330,6 +346,13 @@ fun ProfileMenuItems(onIntent: (ProfileIntent) -> Unit) {
             title = "Yardım ve destek",
             onClick = { onIntent(ProfileIntent.OnHelpClick) }
         )
+        ProfileMenuItem(
+            icon = LyraIcons.Block,
+            title = "Çıkış Yap",
+            onClick = { onIntent(ProfileIntent.OnLogoutClick) },
+            textColor = MaterialTheme.colorScheme.error,
+            iconColor = MaterialTheme.colorScheme.error
+        )
     }
 }
 
@@ -338,7 +361,9 @@ fun ProfileMenuItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     value: String? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     Row(
         modifier = Modifier
@@ -350,7 +375,7 @@ fun ProfileMenuItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = iconColor,
             modifier = Modifier.size(24.dp)
         )
         
@@ -359,7 +384,7 @@ fun ProfileMenuItem(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = textColor,
             modifier = Modifier.weight(1f)
         )
         
@@ -444,3 +469,98 @@ fun EditProfileDialog(
         }
     )
 }
+
+@Composable
+fun PremiumBanner(profile: UserProfile, onClick: () -> Unit) {
+    val membership = profile.membership
+    
+    val daysLeft = remember(membership) {
+        if (membership?.expiresAt != null) {
+            try {
+                val expiresInstant = java.time.Instant.parse(membership.expiresAt)
+                val now = java.time.Instant.now()
+                val diff = java.time.Duration.between(now, expiresInstant).toDays()
+                diff.coerceAtLeast(0)
+            } catch (e: Exception) {
+                0L
+            }
+        } else {
+            0L
+        }
+    }
+
+    val isPremium = profile.isPremium
+    val showBanner = true
+
+    if (showBanner) {
+        val title = when {
+            !isPremium -> "LyraApp Premium'u Keşfet"
+            daysLeft <= 3 -> "Premium · $daysLeft gün kaldı"
+            else -> "Premium Üye"
+        }
+        val subtitle = when {
+            !isPremium -> "Reklamsız ve sınırsız müziğin keyfini çıkar"
+            daysLeft <= 3 -> "Aboneliğiniz bitmek üzere, yenileyin"
+            else -> "Aboneliğinizin bitmesine $daysLeft gün kaldı"
+        }
+        
+        val isClickable = !isPremium || daysLeft <= 3
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFFFFB6C1), Color(0xFFFFDAB9))
+                    )
+                )
+                .clickable(enabled = isClickable, onClick = onClick)
+                .padding(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = LyraIcons.Star,
+                        contentDescription = "Premium",
+                        tint = Color(0xFF6A1B9A),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF6A1B9A)
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF6A1B9A).copy(alpha = 0.8f)
+                    )
+                }
+                
+                if (isClickable) {
+                    Icon(
+                        imageVector = LyraIcons.ArrowForward,
+                        contentDescription = null,
+                        tint = Color(0xFF6A1B9A),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+

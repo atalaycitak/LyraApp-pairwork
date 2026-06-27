@@ -24,6 +24,8 @@ import com.turkcell.lyraapp.ui.notifications.NotificationsRoute
 import com.turkcell.lyraapp.ui.nowplaying.NowPlayingRoute
 import com.turkcell.lyraapp.ui.search.SearchRoute
 import com.turkcell.lyraapp.ui.playlist.create.CreatePlaylistRoute
+import com.turkcell.lyraapp.ui.premium.plans.PremiumPlansRoute
+import com.turkcell.lyraapp.ui.premium.payment.PaymentRoute
 
 /**
  * Uygulamanın iskelet navigasyon yapısı.
@@ -40,6 +42,8 @@ import com.turkcell.lyraapp.ui.playlist.create.CreatePlaylistRoute
  * kendisi yönetir (Login/Register'da olduğu gibi); içerik dolgusu yalnızca alt çubuğun
  * yüksekliğini taşır.
  */
+import com.turkcell.lyraapp.ui.components.premium.GlobalPremiumRenewalManager
+
 @Composable
 fun LyraNavHost(
     modifier: Modifier = Modifier,
@@ -47,6 +51,15 @@ fun LyraNavHost(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // Check and show premium renewal dialog if needed
+    GlobalPremiumRenewalManager(
+        onNavigateToPayment = { planId ->
+            navController.navigate(LyraDestination.paymentRoute(planId)) {
+                launchSingleTop = true
+            }
+        }
+    )
 
     Scaffold(
         modifier = modifier,
@@ -56,6 +69,8 @@ fun LyraNavHost(
             if (currentRoute != LyraDestination.Phone.route && 
                 currentRoute?.startsWith("otp") != true &&
                 currentRoute != LyraDestination.CompleteProfile.route && 
+                currentRoute?.startsWith("premium_plans") != true &&
+                currentRoute?.startsWith("payment") != true &&
                 currentRoute?.startsWith(LyraDestination.NowPlaying.route.substringBefore("{")) != true) {
                 androidx.compose.foundation.layout.Column {
                     com.turkcell.lyraapp.ui.components.miniplayer.LyraMiniPlayerRoute(
@@ -172,11 +187,22 @@ fun LyraNavHost(
             }
             composable(LyraDestination.Profile.route) {
                 com.turkcell.lyraapp.ui.profile.ProfileRoute(
+                    onNavigateToLogin = {
+                        navController.navigate(LyraDestination.Phone.route) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToNotifications = {
                         navController.navigate(LyraDestination.Notifications.route) {
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToPremiumPlans = {
+                        navController.navigate(LyraDestination.PremiumPlans.route) {
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             composable(LyraDestination.Notifications.route) {
@@ -214,6 +240,31 @@ fun LyraNavHost(
                             launchSingleTop = true
                         }
                     }
+                )
+            }
+            
+            composable(LyraDestination.PremiumPlans.route) {
+                PremiumPlansRoute(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPayment = { planId ->
+                        navController.navigate(LyraDestination.paymentRoute(planId)) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+            
+            composable(
+                route = LyraDestination.Payment.route,
+                arguments = listOf(
+                    navArgument("planId") { type = NavType.StringType }
+                ),
+            ) { backStackEntry ->
+                val planId = backStackEntry.arguments?.getString("planId") ?: return@composable
+                PaymentRoute(
+                    planId = planId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToHome = { navController.navigateToHomeClearingAuth() } // Payment success!
                 )
             }
         }

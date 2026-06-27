@@ -1,6 +1,7 @@
 package com.turkcell.lyraapp.data.auth
 
 import com.google.gson.annotations.SerializedName
+import com.turkcell.lyraapp.data.membership.MembershipDto
 
 data class OtpRequest(
     @SerializedName("phone") val phone: String
@@ -41,7 +42,8 @@ data class UserDto(
     @SerializedName("lastName") val lastName: String?,
     @SerializedName("birthDate") val birthDate: String?,
     @SerializedName("createdAt") val createdAt: String,
-    @SerializedName("profileCompleted") val profileCompleted: Boolean
+    @SerializedName("profileCompleted") val profileCompleted: Boolean,
+    @SerializedName("membership") val membership: MembershipDto? = null
 )
 
 data class RefreshTokenRequest(

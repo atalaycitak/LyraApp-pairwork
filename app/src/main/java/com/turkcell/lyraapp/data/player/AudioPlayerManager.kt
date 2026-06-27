@@ -11,10 +11,13 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.turkcell.lyraapp.data.common.ArtworkPalette
+import com.turkcell.lyraapp.data.playback.PlaybackRepository
+import com.turkcell.lyraapp.data.playback.PlaybackResult
+import com.turkcell.lyraapp.data.profile.ProfileRepository
+import com.turkcell.lyraapp.data.song.SongDto
 import com.turkcell.lyraapp.data.song.SongRepository
 import com.turkcell.lyraapp.data.download.DownloadedSongDao
 import com.turkcell.lyraapp.data.download.SongDownloadManager
-import com.turkcell.lyraapp.data.home.HomeRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,16 +47,22 @@ data class GlobalPlayerState(
     val durationMs: Long = 0L,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isDownloaded: Boolean = false
+    val isDownloaded: Boolean = false,
+    // Reklam alanlari
+    val isPlayingAd: Boolean = false,
+    val adTitle: String? = null,
+    val adAdvertiser: String? = null,
+    val adDurationMs: Long = 0L
 )
 
 @Singleton
 class AudioPlayerManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val songRepository: SongRepository,
+    private val playbackRepository: PlaybackRepository,
+    private val profileRepository: ProfileRepository,
     private val downloadedSongDao: DownloadedSongDao,
     private val songDownloadManager: SongDownloadManager,
-    private val homeRepository: HomeRepository
 ) : PlayerController {
 
     private val _playerState = MutableStateFlow(GlobalPlayerState())
@@ -67,6 +76,11 @@ class AudioPlayerManager @Inject constructor(
     private var disposed = false
     private var wasPlayingBeforeInterruption = false
 
+    // Reklam sonrasi calinacak sarki bilgisi
+    private var pendingSongStreamUrl: String? = null
+    private var pendingSongDto: SongDto? = null
+    private var pendingImpressionId: String? = null
+
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
@@ -75,7 +89,12 @@ class AudioPlayerManager @Inject constructor(
                 }
                 Player.STATE_ENDED -> {
                     cancelPositionPolling()
-                    _playerState.update { it.copy(isPlaying = false, currentPositionMs = 0L) }
+                    // Reklam bitmisse siradaki sarkiyi cal
+                    if (_playerState.value.isPlayingAd) {
+                        onAdFinished()
+                    } else {
+                        _playerState.update { it.copy(isPlaying = false, currentPositionMs = 0L) }
+                    }
                 }
                 else -> Unit
             }
@@ -132,38 +151,88 @@ class AudioPlayerManager @Inject constructor(
     override fun playSong(songId: String) {
         if (disposed) return
 
-        if (_playerState.value.songId == songId) {
-            // Şarkı zaten yüklü, çalmıyorsa başlat
+        if (_playerState.value.songId == songId && !_playerState.value.isPlayingAd) {
+            // Sarki zaten yuklu ve reklam calmiyorsa, calmiyorsa baslat
             if (player?.isPlaying == false) player?.play()
             return
         }
 
         scope.launch {
-            // MediaController asenkron yüklendiği için hazır olmasını bekle
+            // MediaController asenkron yuklendiginden hazir olmasini bekle
             while (player == null && !disposed) {
                 delay(50)
             }
             if (disposed) return@launch
 
-            _playerState.update { it.copy(isLoading = true, errorMessage = null) }
+            _playerState.update {
+                it.copy(
+                    isLoading = true,
+                    errorMessage = null,
+                    isPlayingAd = false,
+                    adTitle = null,
+                    adAdvertiser = null,
+                    adDurationMs = 0L
+                )
+            }
 
             cancelPositionPolling()
             player?.stop()
             player?.clearMediaItems()
 
-            val songResult = songRepository.getSongById(songId)
-            songResult.onFailure { error ->
-                _playerState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Şarkı bilgisi yüklenemedi.") }
+            // Playback/next API'sini cagir — bu, dinleme kaydini da otomatik olusturur
+            val playbackResult = playbackRepository.getNextPlayback(songId)
+            playbackResult.onFailure { error ->
+                _playerState.update {
+                    it.copy(isLoading = false, errorMessage = error.message ?: "Oynatma bilgisi alinamadi.")
+                }
                 return@launch
             }
 
-            val song = songResult.getOrThrow()
-            val (colorStart, colorEnd) = ArtworkPalette.colorPairForId(song.id)
+            val result = playbackResult.getOrThrow()
 
+            when (result) {
+                is PlaybackResult.SongPlayback -> {
+                    playSongDirect(result.song, result.streamUrl)
+                }
+                is PlaybackResult.AdPlayback -> {
+                    playAdThenSong(result)
+                }
+            }
+        }
+    }
+
+    override fun playNext() {
+        if (disposed) return
+        scope.launch {
+            val response = songRepository.getSongs(limit = 50)
+            response.onSuccess { data ->
+                val currentId = _playerState.value.songId
+                // Mevcut şarkıdan farklı rastgele bir şarkı seç
+                val nextSong = data.data.filter { it.id != currentId }.randomOrNull()
+                    ?: data.data.randomOrNull()
+                if (nextSong != null) {
+                    playSong(nextSong.id)
+                }
+            }
+        }
+    }
+
+    /**
+     * Premium kullanici veya reklam sirasi gelmemis durumda dogrudan sarkiyi calar.
+     */
+    private fun playSongDirect(song: SongDto, streamUrl: String) {
+        val (colorStart, colorEnd) = ArtworkPalette.colorPairForId(song.id)
+
+        scope.launch {
             val downloadedEntity = withContext(Dispatchers.IO) {
                 downloadedSongDao.getBySongId(song.id)
             }
             val isDownloaded = downloadedEntity != null
+
+            // Record the play in the backend so it shows up in "Recently Played"
+            scope.launch {
+                profileRepository.recordPlay(song.id)
+            }
 
             _playerState.update {
                 it.copy(
@@ -174,58 +243,127 @@ class AudioPlayerManager @Inject constructor(
                     artworkEndColor = colorEnd,
                     durationMs = song.durationMs,
                     currentPositionMs = 0L,
-                    isDownloaded = isDownloaded
+                    isDownloaded = isDownloaded,
+                    isLoading = false,
+                    isPlayingAd = false,
+                    adTitle = null,
+                    adAdvertiser = null,
+                    adDurationMs = 0L
                 )
             }
 
+            // Indirilen sarki varsa yerel dosyadan cal
             if (isDownloaded && downloadedEntity != null) {
                 val localFile = File(downloadedEntity.filePath)
                 if (localFile.exists()) {
-                    _playerState.update { it.copy(isLoading = false) }
-                    val mediaItem = MediaItem.Builder()
-                        .setUri(android.net.Uri.fromFile(localFile))
-                        .setMediaMetadata(
-                            MediaMetadata.Builder()
-                                .setTitle(song.title)
-                                .setArtist(song.artist)
-                                .build()
-                        )
-                        .build()
+                    val mediaItem = buildMediaItem(
+                        uri = android.net.Uri.fromFile(localFile).toString(),
+                        title = song.title,
+                        artist = song.artist
+                    )
                     player?.setMediaItem(mediaItem)
                     player?.prepare()
                     player?.play()
-                    
-                    // Playback basladiginda backend'e bildir
-                    homeRepository.recordPlay(song.id)
                     return@launch
                 }
             }
 
-            val urlResult = songRepository.getStreamUrl(songId)
-            _playerState.update { it.copy(isLoading = false) }
-            urlResult
-                .onSuccess { streamData ->
-                    val mediaItem = MediaItem.Builder()
-                        .setUri(streamData.url)
-                        .setMediaMetadata(
-                            MediaMetadata.Builder()
-                                .setTitle(song.title)
-                                .setArtist(song.artist)
-                                .build()
-                        )
-                        .build()
-                    player?.setMediaItem(mediaItem)
-                    player?.prepare()
-                    player?.play()
-                    
-                    // Playback basladiginda backend'e bildir
-                    homeRepository.recordPlay(song.id)
-                }
-                .onFailure { error ->
-                    _playerState.update { it.copy(errorMessage = error.message ?: "Ses akışı başlatılamadı.") }
-                }
+            // Stream URL ile cal
+            val mediaItem = buildMediaItem(
+                uri = streamUrl,
+                title = song.title,
+                artist = song.artist
+            )
+            player?.setMediaItem(mediaItem)
+            player?.prepare()
+            player?.play()
         }
     }
+
+    /**
+     * Ucretsiz kullanici — once reklam calar, bittikten sonra sarkiye gecer.
+     */
+    private fun playAdThenSong(adPlayback: PlaybackResult.AdPlayback) {
+        val (colorStart, colorEnd) = ArtworkPalette.colorPairForId(adPlayback.song.id)
+
+        // Sarki bilgilerini sonrasi icin sakla
+        pendingSongStreamUrl = adPlayback.songStreamUrl
+        pendingSongDto = adPlayback.song
+        pendingImpressionId = adPlayback.impressionId
+
+        _playerState.update {
+            it.copy(
+                songId = adPlayback.song.id,
+                title = adPlayback.ad.title,
+                artist = adPlayback.ad.advertiser,
+                artworkStartColor = colorStart,
+                artworkEndColor = colorEnd,
+                durationMs = adPlayback.ad.durationMs.toLong(),
+                currentPositionMs = 0L,
+                isLoading = false,
+                isPlayingAd = true,
+                adTitle = adPlayback.ad.title,
+                adAdvertiser = adPlayback.ad.advertiser,
+                adDurationMs = adPlayback.ad.durationMs.toLong()
+            )
+        }
+
+        val adMediaItem = buildMediaItem(
+            uri = adPlayback.adStreamUrl,
+            title = adPlayback.ad.title,
+            artist = adPlayback.ad.advertiser
+        )
+        player?.setMediaItem(adMediaItem)
+        player?.prepare()
+        player?.play()
+    }
+
+    /**
+     * Reklam bittikten sonra cagrilir:
+     * 1. Ad-complete bildirimini gonder
+     * 2. Beklettigi sarkiyi cal
+     */
+    private fun onAdFinished() {
+        val impressionId = pendingImpressionId
+        val songDto = pendingSongDto
+        val streamUrl = pendingSongStreamUrl
+
+        // Pending verileri temizle
+        pendingImpressionId = null
+        pendingSongDto = null
+        pendingSongStreamUrl = null
+
+        if (impressionId == null || songDto == null || streamUrl == null) {
+            _playerState.update {
+                it.copy(
+                    isPlayingAd = false,
+                    isPlaying = false,
+                    currentPositionMs = 0L,
+                    errorMessage = "Reklam sonrasi sarki bilgisi bulunamadi."
+                )
+            }
+            return
+        }
+
+        // Ad-complete bildirimini arka planda gonder (fire-and-forget)
+        scope.launch {
+            playbackRepository.markAdComplete(impressionId)
+        }
+
+        // Sarkiyi cal
+        playSongDirect(songDto, streamUrl)
+    }
+
+    private fun buildMediaItem(uri: String, title: String, artist: String): MediaItem =
+        MediaItem.Builder()
+            .setUri(uri)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(title)
+                    .setArtist(artist)
+                    .build()
+            )
+            .build()
 
     override fun togglePlayPause() {
         if (disposed) return
@@ -238,6 +376,8 @@ class AudioPlayerManager @Inject constructor(
 
     override fun seekTo(positionMs: Long) {
         if (disposed) return
+        // Reklam calinirken seek engellenir
+        if (_playerState.value.isPlayingAd) return
         player?.seekTo(positionMs)
     }
 
@@ -261,6 +401,9 @@ class AudioPlayerManager @Inject constructor(
         controllerFuture?.let { MediaController.releaseFuture(it) }
         controllerFuture = null
         player = null
+        pendingSongStreamUrl = null
+        pendingSongDto = null
+        pendingImpressionId = null
         scope.cancel()
         _playerState.update { GlobalPlayerState() }
     }
@@ -304,3 +447,4 @@ class AudioPlayerManager @Inject constructor(
     }
 
 }
+
