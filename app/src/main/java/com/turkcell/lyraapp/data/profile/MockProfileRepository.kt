@@ -19,7 +19,7 @@ class MockProfileRepository @Inject constructor() : ProfileRepository {
                 name = "Zeynep Kaya",
                 username = "zeynepk",
                 initials = "ZK",
-                isPremium = true,
+                membership = null,
                 playlistCount = 127,
                 followersCount = "1.2B",
                 followingCount = 348

@@ -38,6 +38,17 @@ class MockPlaylistRepository @Inject constructor() : PlaylistRepository {
         }
     }
 
+    override suspend fun renamePlaylist(playlistId: String, newName: String): Result<Unit> = runCatching {
+        if (newName.isBlank()) throw IllegalArgumentException("Isim bos olamaz")
+        val index = mockPlaylists.indexOfFirst { it.id == playlistId }
+        if (index != -1) {
+            val old = mockPlaylists[index]
+            mockPlaylists[index] = old.copy(title = newName)
+        } else {
+            throw Exception("Playlist bulunamadi")
+        }
+    }
+
     override suspend fun getPlaylistDetail(playlistId: String): Result<PlaylistDetailModel> {
         delay(500) // Ag isteğini simule et
         return Result.success(

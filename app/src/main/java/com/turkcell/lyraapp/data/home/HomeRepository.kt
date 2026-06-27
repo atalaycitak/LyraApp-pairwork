@@ -1,19 +1,14 @@
 package com.turkcell.lyraapp.data.home
 
 /**
- * Ana sayfa içeriğinin veri kaynağı soyutlaması.
+ * Ana sayfa iceriginin veri kaynagi soyutlamasi.
  *
- * Backend REST API'si hazır olmadığından geçici implementasyon [MockHomeRepository]'dir;
- * gerçek API geldiğinde yalnızca implementasyon ve `di/HomeModule.kt` bağlaması değişir
- * (bkz. mvi-overview.md §6).
+ * [RetrofitHomeRepository] bu interface'i implement eder;
+ * gercek API verisi kullanilir.
  */
 interface HomeRepository {
 
-    /** Ana sayfa beslemesinin tamamını tek seferde döndürür. */
+    /** Ana sayfa beslemesinin tamamini tek seferde dondurur. */
     suspend fun getHomeFeed(): Result<HomeFeed>
-
-    /**
-     * Oynatma geçmişini backend'e bildirir.
-     */
-    suspend fun recordPlay(songId: String): Result<Unit>
 }
+

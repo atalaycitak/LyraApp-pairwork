@@ -12,4 +12,15 @@ interface ProfileApiService {
 
     @POST("api/v1/me/update-informations")
     suspend fun updateProfile(@Body request: UpdateProfileRequest): Response<UserResponseDto>
+
+    @POST("api/v1/me/plays")
+    suspend fun recordPlay(@Body request: RecordPlayRequestDto): Response<RecordPlayResponseDto>
 }
+
+data class RecordPlayRequestDto(val songId: String)
+data class RecordPlayResponseDto(
+    val data: RecordPlayData?
+)
+data class RecordPlayData(
+    val recorded: Boolean
+)

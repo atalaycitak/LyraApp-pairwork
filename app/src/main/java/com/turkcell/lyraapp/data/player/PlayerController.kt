@@ -6,6 +6,7 @@ interface PlayerController {
     val playerState: StateFlow<GlobalPlayerState>
 
     fun playSong(songId: String)
+    fun playNext()
     fun togglePlayPause()
     fun seekTo(positionMs: Long)
     fun release()

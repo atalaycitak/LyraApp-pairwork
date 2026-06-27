@@ -4,7 +4,9 @@ import com.turkcell.lyraapp.data.playlist.PlaylistDetailModel
 
 data class PlaylistDetailUiState(
     val isLoading: Boolean = false,
-    val playlistDetail: PlaylistDetailModel? = null
+    val playlistDetail: PlaylistDetailModel? = null,
+    val showRenameDialog: Boolean = false,
+    val isRenaming: Boolean = false
 )
 
 sealed interface PlaylistDetailIntent {
@@ -18,6 +20,9 @@ sealed interface PlaylistDetailIntent {
     data object OnBackClick : PlaylistDetailIntent
     data object OnMoreClick : PlaylistDetailIntent
     data class OnRemoveSongClick(val songId: String) : PlaylistDetailIntent
+    data object OnRenameClick : PlaylistDetailIntent
+    data object OnDismissRenameDialog : PlaylistDetailIntent
+    data class OnConfirmRename(val newName: String) : PlaylistDetailIntent
 }
 
 sealed interface PlaylistDetailEffect {

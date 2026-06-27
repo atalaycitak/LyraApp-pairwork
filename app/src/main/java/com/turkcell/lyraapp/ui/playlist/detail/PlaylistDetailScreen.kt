@@ -88,8 +88,13 @@ fun PlaylistDetailScreen(
                     IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnBackClick) }) {
                         Icon(imageVector = LyraIcons.ArrowBack, contentDescription = "Geri", tint = Color.White)
                     }
-                    IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnMoreClick) }) {
-                        Icon(imageVector = LyraIcons.MoreVert, contentDescription = "Daha Fazla", tint = Color.White)
+                    Row {
+                        IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnRenameClick) }) {
+                            Icon(imageVector = LyraIcons.Edit, contentDescription = "İsmi Değiştir", tint = Color.White)
+                        }
+                        IconButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnMoreClick) }) {
+                            Icon(imageVector = LyraIcons.MoreVert, contentDescription = "Daha Fazla", tint = Color.White)
+                        }
                     }
                 }
 
@@ -217,6 +222,39 @@ fun PlaylistDetailScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+
+        if (uiState.showRenameDialog) {
+            var newName by remember { mutableStateOf(uiState.playlistDetail?.title ?: "") }
+            AlertDialog(
+                onDismissRequest = { viewModel.onIntent(PlaylistDetailIntent.OnDismissRenameDialog) },
+                title = { Text("Çalma Listesini Yeniden Adlandır") },
+                text = {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text("Yeni İsim") },
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { viewModel.onIntent(PlaylistDetailIntent.OnConfirmRename(newName)) },
+                        enabled = newName.isNotBlank() && !uiState.isRenaming
+                    ) {
+                        if (uiState.isRenaming) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        } else {
+                            Text("Kaydet")
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.onIntent(PlaylistDetailIntent.OnDismissRenameDialog) }) {
+                        Text("İptal")
+                    }
+                }
+            )
+        }
     }
 }
 

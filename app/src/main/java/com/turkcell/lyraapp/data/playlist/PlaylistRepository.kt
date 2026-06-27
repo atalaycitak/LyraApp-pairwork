@@ -35,4 +35,7 @@ interface PlaylistRepository {
 
     /** Kullanıcının kendi listesinden bir şarkı çıkarır. */
     suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit>
+
+    /** Çalma listesinin ismini değiştirir. */
+    suspend fun renamePlaylist(playlistId: String, newName: String): Result<Unit>
 }

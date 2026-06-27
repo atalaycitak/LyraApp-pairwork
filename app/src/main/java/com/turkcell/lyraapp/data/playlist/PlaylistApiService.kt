@@ -25,4 +25,9 @@ interface PlaylistApiService {
 
     @DELETE("api/v1/me/playlists/{id}/tracks/{songId}")
     suspend fun removeTrackFromPlaylist(@Path("id") playlistId: String, @Path("songId") songId: String)
+
+    @retrofit2.http.PATCH("api/v1/me/playlists/{id}")
+    suspend fun renamePlaylist(@Path("id") playlistId: String, @Body request: RenamePlaylistRequestDto)
 }
+
+data class RenamePlaylistRequestDto(val name: String)

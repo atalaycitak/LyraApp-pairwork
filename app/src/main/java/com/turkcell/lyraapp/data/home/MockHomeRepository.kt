@@ -48,8 +48,5 @@ class MockHomeRepository @Inject constructor() : HomeRepository {
             ForYouSong("fy-3", "Enerji Ver", 0xFF3FAE9C, 0xFF1E5D52),
         )
     }
-
-    override suspend fun recordPlay(songId: String): Result<Unit> {
-        return Result.success(Unit)
-    }
 }
+

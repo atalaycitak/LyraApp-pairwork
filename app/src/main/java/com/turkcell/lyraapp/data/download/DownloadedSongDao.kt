@@ -8,14 +8,14 @@ import androidx.room.Query
 @Dao
 interface DownloadedSongDao {
     @Query("SELECT * FROM downloaded_songs WHERE songId = :songId")
-    suspend fun getBySongId(songId: String): DownloadedSongEntity?
+    fun getBySongId(songId: String): DownloadedSongEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entity: DownloadedSongEntity): Long
+    fun insert(entity: DownloadedSongEntity): Long
 
     @Query("DELETE FROM downloaded_songs WHERE songId = :songId")
-    suspend fun deleteBySongId(songId: String): Int
+    fun deleteBySongId(songId: String): Int
 
     @Query("SELECT EXISTS(SELECT 1 FROM downloaded_songs WHERE songId = :songId)")
-    suspend fun isDownloaded(songId: String): Boolean
+    fun isDownloaded(songId: String): Boolean
 }

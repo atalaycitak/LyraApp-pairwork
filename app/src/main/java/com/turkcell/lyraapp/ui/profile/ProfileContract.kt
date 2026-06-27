@@ -19,6 +19,7 @@ sealed interface ProfileIntent {
     data object OnNotificationsClick : ProfileIntent
     data object OnPrivacyClick : ProfileIntent
     data object OnHelpClick : ProfileIntent
+    data object OnPremiumBannerClick : ProfileIntent
 
     data object OnEditProfileClick : ProfileIntent
     data object OnDismissEditDialog : ProfileIntent
@@ -27,9 +28,12 @@ sealed interface ProfileIntent {
         val lastName: String,
         val birthDate: String
     ) : ProfileIntent
+    data object OnLogoutClick : ProfileIntent
 }
 
 sealed interface ProfileEffect {
     data object NavigateToNotifications : ProfileEffect
+    data object NavigateToPremiumPlans : ProfileEffect
     data class ShowSnackbar(val message: String) : ProfileEffect
+    data object NavigateToLogin : ProfileEffect
 }
