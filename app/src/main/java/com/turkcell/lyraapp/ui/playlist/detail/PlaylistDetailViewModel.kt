@@ -66,7 +66,7 @@ class PlaylistDetailViewModel @Inject constructor(
     }
 
     private fun renamePlaylist(newName: String) {
-        val playlistId = currentPlaylistId ?: return
+        val playlistId = _uiState.value.playlistDetail?.id ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isRenaming = true) }
             val result = playlistRepository.renamePlaylist(playlistId, newName)
