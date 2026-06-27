@@ -13,7 +13,6 @@ import androidx.media3.session.SessionToken
 import com.turkcell.lyraapp.data.common.ArtworkPalette
 import com.turkcell.lyraapp.data.playback.PlaybackRepository
 import com.turkcell.lyraapp.data.playback.PlaybackResult
-import com.turkcell.lyraapp.data.profile.ProfileRepository
 import com.turkcell.lyraapp.data.song.SongDto
 import com.turkcell.lyraapp.data.song.SongRepository
 import com.turkcell.lyraapp.data.download.DownloadedSongDao
@@ -60,7 +59,6 @@ class AudioPlayerManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val songRepository: SongRepository,
     private val playbackRepository: PlaybackRepository,
-    private val profileRepository: ProfileRepository,
     private val downloadedSongDao: DownloadedSongDao,
     private val songDownloadManager: SongDownloadManager,
 ) : PlayerController {
@@ -228,11 +226,6 @@ class AudioPlayerManager @Inject constructor(
                 downloadedSongDao.getBySongId(song.id)
             }
             val isDownloaded = downloadedEntity != null
-
-            // Record the play in the backend so it shows up in "Recently Played"
-            scope.launch {
-                profileRepository.recordPlay(song.id)
-            }
 
             _playerState.update {
                 it.copy(
