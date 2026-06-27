@@ -368,15 +368,15 @@
 
 - Sebep: Kütüphanede rastgele simüle edilen sahte listeler ve oluşturulamayan playlist özelliklerinin backend sözleşmesiyle çalışan, tam yetkili (gerçek veri + manipülasyon) hale getirilmesi.
 
-### Oynatma Geçmişi (Plays)
+### Oynatma Geçmişi ve Playback Kararı
 
-- Seçim: **`POST /api/v1/me/plays` ile şarkı başladığı an backend'e bildirim.**
+- Seçim: **Merkezi oynatma akışı `POST /api/v1/me/playback/next` üzerinden yürür; bu uç dinleme kaydını da oluşturur.**
 
-- Son Güncelleme Tarihi: 25.06.2026
+- Son Güncelleme Tarihi: 27.06.2026
 
-- Uygulama: `HomeApiService` içerisine `recordPlay` endpoint'i ve modeli eklendi. `HomeRepository` bu ucu sarmalayacak şekilde güncellendi. Uygulamanın merkezi oynatma denetleyicisi olan `AudioPlayerManager`, Hilt üzerinden `HomeRepository` bağımlılığını alacak şekilde güncellendi. Yeni mimaride `playSong(songId)` metodu, şarkı başarıyla yüklenip `player.play()` çağrıldıktan hemen sonra arka planda fire-and-forget olarak `homeRepository.recordPlay(songId)` fonksiyonunu tetikler.
+- Uygulama: `AudioPlayerManager.playSong(songId)` önce `PlaybackRepository.getNextPlayback(songId)` çağırır. Backend bu çağrıda kullanıcının üyelik durumuna göre doğrudan şarkı veya önce reklam döndürür ve aynı işlem içinde dinleme kaydını oluşturur. Bu nedenle aynı oynatma için ayrıca `POST /api/v1/me/plays` / `recordPlay(songId)` çağrısı yapılmaz.
 
-- Sebep: Kullanıcının dinlediği şarkıların backend tarafındaki "Son Çalınanlar" (`recently-played`) listesini besleyebilmesi ve kişisel öneri algoritmalarının dinamik olarak güncellenmesi.
+- Sebep: Aynı şarkının "Son Çalınanlar" (`recently-played`) listesine iki kez düşmesini ve öneri verisinin hatalı şişmesini önlemek. `POST /api/v1/me/plays` yalnızca `playback/next` kullanılmayan ayrı istemci akışları için yedek/direkt kayıt endpoint'i olarak tutulur.
 
 ### Kullanıcı Profili (Me) ve Güncelleme
 

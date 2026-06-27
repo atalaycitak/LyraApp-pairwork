@@ -14,6 +14,8 @@
         { "name": "me", "description": "Authenticated user profile and personalised feeds" },
         { "name": "songs", "description": "Song catalog" },
         { "name": "playlists", "description": "Playlists" },
+        { "name": "memberships", "description": "Premium membership plans and checkout" },
+        { "name": "playback", "description": "Playback decision flow and ad completion" },
         { "name": "stream", "description": "Signed, Range-aware audio delivery" },
         { "name": "meta", "description": "Service health" }
     ],
@@ -467,6 +469,119 @@
                 }
             }
         },
+        "/api/v1/memberships/plans": {
+            "get": {
+                "tags": ["memberships"],
+                "summary": "List available premium plans",
+                "responses": {
+                    "200": {
+                        "description": "Available plans",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": { "$ref": "#/components/schemas/MembershipPlan" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/memberships/checkout": {
+            "post": {
+                "tags": ["memberships"],
+                "summary": "Purchase a premium membership with mock card payment",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/CheckoutRequest" }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Checkout completed",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/CheckoutPayload" }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid plan or card",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/Error" }
+                            }
+                        }
+                    },
+                    "402": {
+                        "description": "Payment declined",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/Error" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/me/playback/next": {
+            "post": {
+                "tags": ["playback"],
+                "summary": "Resolve the next playback item",
+                "description": "Called immediately before playback. The server records the play and returns either a song stream or an ad followed by the requested song stream. Do not also call `/api/v1/me/plays` for the same playback.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/PlaybackNextRequest" }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Playback decision",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/PlaybackNextPayload" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/me/playback/ad-complete": {
+            "post": {
+                "tags": ["playback"],
+                "summary": "Mark an ad playback as completed",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": { "$ref": "#/components/schemas/AdCompleteRequest" }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ad completion accepted",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/AdCompletePayload" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/songs": {
             "get": {
                 "tags": ["songs"],
@@ -799,7 +914,11 @@
                     "lastName": { "type": "string", "nullable": true },
                     "birthDate": { "type": "string", "nullable": true },
                     "createdAt": { "type": "string", "format": "date-time" },
-                    "profileCompleted": { "type": "boolean" }
+                    "profileCompleted": { "type": "boolean" },
+                    "membership": {
+                        "allOf": [{ "$ref": "#/components/schemas/Membership" }],
+                        "nullable": true
+                    }
                 }
             },
             "UpdateProfileRequest": {
@@ -865,6 +984,133 @@
                             "url": { "type": "string", "format": "uri", "example": "http://localhost:3000/api/v1/stream/s_neon-tide?expires=1781192262&signature=GJHnZTiw..." },
                             "expiresAt": { "type": "string", "format": "date-time" },
                             "mimeType": { "type": "string", "example": "audio/wav" }
+                        }
+                    }
+                }
+            },
+            "MembershipPlan": {
+                "type": "object",
+                "required": ["id", "type", "name", "description", "priceKurus", "price", "currency", "durationDays", "autoRenew"],
+                "properties": {
+                    "id": { "type": "string", "example": "recurring" },
+                    "type": { "type": "string", "enum": ["recurring", "one-time"] },
+                    "name": { "type": "string", "example": "Aylik abonelik" },
+                    "description": { "type": "string" },
+                    "priceKurus": { "type": "integer", "example": 5999 },
+                    "price": { "type": "string", "example": "59,99 TL" },
+                    "currency": { "type": "string", "example": "TRY" },
+                    "durationDays": { "type": "integer", "example": 30 },
+                    "autoRenew": { "type": "boolean" }
+                }
+            },
+            "Membership": {
+                "type": "object",
+                "required": ["planId", "type", "status", "autoRenew", "startedAt", "expiresAt"],
+                "properties": {
+                    "planId": { "type": "string", "example": "recurring" },
+                    "type": { "type": "string", "enum": ["recurring", "one-time"] },
+                    "status": { "type": "string", "enum": ["active", "expired"] },
+                    "autoRenew": { "type": "boolean" },
+                    "startedAt": { "type": "string", "format": "date-time" },
+                    "expiresAt": { "type": "string", "format": "date-time" }
+                }
+            },
+            "CheckoutRequest": {
+                "type": "object",
+                "required": ["plan", "card"],
+                "properties": {
+                    "plan": { "type": "string", "example": "recurring" },
+                    "card": { "$ref": "#/components/schemas/Card" }
+                }
+            },
+            "Card": {
+                "type": "object",
+                "required": ["number", "expMonth", "expYear", "cvc"],
+                "properties": {
+                    "number": { "type": "string", "example": "4242 4242 4242 4242" },
+                    "expMonth": { "type": "integer", "example": 12 },
+                    "expYear": { "type": "integer", "example": 2030 },
+                    "cvc": { "type": "string", "example": "123" },
+                    "holderName": { "type": "string", "nullable": true }
+                }
+            },
+            "CheckoutPayload": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "payment": {
+                                "type": "object",
+                                "properties": {
+                                    "transactionId": { "type": "string" },
+                                    "amountKurus": { "type": "integer" },
+                                    "currency": { "type": "string", "example": "TRY" }
+                                }
+                            },
+                            "membership": { "$ref": "#/components/schemas/Membership" }
+                        }
+                    }
+                }
+            },
+            "PlaybackNextRequest": {
+                "type": "object",
+                "required": ["songId"],
+                "properties": {
+                    "songId": { "type": "string", "example": "s_neon-tide" }
+                }
+            },
+            "StreamLink": {
+                "type": "object",
+                "required": ["url", "expiresAt", "mimeType"],
+                "properties": {
+                    "url": { "type": "string", "format": "uri" },
+                    "expiresAt": { "type": "string", "format": "date-time" },
+                    "mimeType": { "type": "string", "example": "audio/wav" }
+                }
+            },
+            "Ad": {
+                "type": "object",
+                "required": ["id", "title", "advertiser", "durationMs", "mimeType"],
+                "properties": {
+                    "id": { "type": "string" },
+                    "title": { "type": "string" },
+                    "advertiser": { "type": "string" },
+                    "durationMs": { "type": "integer" },
+                    "mimeType": { "type": "string", "example": "audio/wav" }
+                }
+            },
+            "PlaybackNextPayload": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": ["type", "song", "stream"],
+                        "properties": {
+                            "type": { "type": "string", "enum": ["song", "ad"] },
+                            "song": { "$ref": "#/components/schemas/Song" },
+                            "stream": { "$ref": "#/components/schemas/StreamLink" },
+                            "ad": { "$ref": "#/components/schemas/Ad" },
+                            "adStream": { "$ref": "#/components/schemas/StreamLink" },
+                            "impressionId": { "type": "string" }
+                        }
+                    }
+                }
+            },
+            "AdCompleteRequest": {
+                "type": "object",
+                "required": ["impressionId"],
+                "properties": {
+                    "impressionId": { "type": "string" }
+                }
+            },
+            "AdCompletePayload": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "completed": { "type": "boolean", "example": true }
                         }
                     }
                 }
