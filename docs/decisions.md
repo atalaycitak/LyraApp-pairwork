@@ -388,6 +388,21 @@
 
 - Sebep: Profil sayfasındaki tüm bilgilerin sahte (mock) olması engelini aşarak backend ile tam entegre (read & write) profil yönetimi deneyimini sağlamak.
 
+### Profil Playlist Sayısı
+
+- Seçim: **Profil istatistiğindeki playlist sayısı `/api/v1/me/playlists` üzerinden hesaplanır.**
+
+- Son Güncelleme Tarihi: 27.06.2026
+
+- Uygulama: `RetrofitProfileRepository`, `GET /api/v1/me` ile kullanıcı bilgisini aldıktan sonra
+  mevcut `PlaylistApiService.getMyPlaylists()` çağrısıyla kullanıcının kişisel çalma listelerini
+  okur ve `UserProfile.playlistCount` değerini bu listenin boyutundan üretir. Playlist isteği
+  başarısız olursa profil ekranı kullanılabilir kalır ve istatistik güvenli şekilde `0` olur.
+
+- Sebep: Profil ekranındaki `playlistCount = 127` sabit değerini kaldırıp, zaten projede bulunan
+  kişisel playlist API akışını kullanarak hocanın gerçek API entegrasyonu beklentisine daha yakın
+  bir davranış sağlamak.
+
 ### Token Yenileme (Authenticator) Mekanizması
 
 - Seçim: **`TokenAuthenticator` sınıfının oluşturularak OkHttp instance'ına bağlanması.**

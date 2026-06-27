@@ -1,9 +1,11 @@
 package com.turkcell.lyraapp.data.profile
 
+import com.turkcell.lyraapp.data.playlist.PlaylistApiService
 import javax.inject.Inject
 
 class RetrofitProfileRepository @Inject constructor(
-    private val profileApiService: ProfileApiService
+    private val profileApiService: ProfileApiService,
+    private val playlistApiService: PlaylistApiService
 ) : ProfileRepository {
 
     override suspend fun getProfileInfo(): Result<UserProfile> = runCatching {
@@ -12,7 +14,8 @@ class RetrofitProfileRepository @Inject constructor(
             throw Exception("Profil bilgileri alınamadı: ${response.code()}")
         }
         val userDto = response.body()!!.data
-        mapToUserProfile(userDto)
+        val playlistCount = getPlaylistCount()
+        mapToUserProfile(userDto, playlistCount)
     }
 
     override suspend fun updateProfile(
@@ -37,7 +40,15 @@ class RetrofitProfileRepository @Inject constructor(
         }
     }
 
-    private fun mapToUserProfile(userDto: com.turkcell.lyraapp.data.auth.UserDto): UserProfile {
+    private suspend fun getPlaylistCount(): Int =
+        runCatching {
+            playlistApiService.getMyPlaylists().data.size
+        }.getOrDefault(0)
+
+    private fun mapToUserProfile(
+        userDto: com.turkcell.lyraapp.data.auth.UserDto,
+        playlistCount: Int
+    ): UserProfile {
         val calculatedName = if (!userDto.firstName.isNullOrBlank() || !userDto.lastName.isNullOrBlank()) {
             listOfNotNull(userDto.firstName, userDto.lastName).joinToString(" ")
         } else if (!userDto.displayName.isNullOrBlank()) {
@@ -62,7 +73,7 @@ class RetrofitProfileRepository @Inject constructor(
             username = userDto.phone.replace("+", ""),
             initials = calculatedInitials,
             membership = userDto.membership,
-            playlistCount = 127, // Dummy — API'da yok
+            playlistCount = playlistCount,
             followersCount = "1.2B", // Dummy — API'da yok
             followingCount = 348 // Dummy — API'da yok
         )
