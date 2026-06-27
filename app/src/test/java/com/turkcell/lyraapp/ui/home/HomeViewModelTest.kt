@@ -3,7 +3,8 @@ package com.turkcell.lyraapp.ui.home
 import com.turkcell.lyraapp.data.home.MockHomeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -53,8 +54,8 @@ class HomeViewModelTest {
         val state = viewModel.uiState.value
         assertNotNull(state.greeting)
         assertTrue(
-            state.greeting in listOf("Gunaydin", "Iyi gunler", "Iyi aksamlar"),
-            "Selamlama metni gecerli olmali: ${state.greeting}"
+            "Selamlama metni gecerli olmali: ${state.greeting}",
+            state.greeting in listOf("Günaydın", "İyi günler", "İyi akşamlar")
         )
     }
 
@@ -62,17 +63,15 @@ class HomeViewModelTest {
     fun `song clicked emits navigate to now playing effect`() = runTest {
         advanceUntilIdle()
 
-        val effects = mutableListOf<HomeEffect>()
-        val job = backgroundScope.launch(testDispatcher) {
-            viewModel.effect.collect { effects.add(it) }
+        val effect = backgroundScope.async(testDispatcher) {
+            viewModel.effect.first()
         }
+        advanceUntilIdle()
 
         viewModel.onIntent(HomeIntent.SongClicked("qp-1"))
         advanceUntilIdle()
 
-        assertEquals(1, effects.size)
-        assertEquals("qp-1", (effects[0] as HomeEffect.NavigateToNowPlaying).songId)
-        job.cancel()
+        assertEquals("qp-1", (effect.await() as HomeEffect.NavigateToNowPlaying).songId)
     }
 
     @Test

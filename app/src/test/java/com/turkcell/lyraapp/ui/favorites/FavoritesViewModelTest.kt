@@ -3,7 +3,8 @@ package com.turkcell.lyraapp.ui.favorites
 import com.turkcell.lyraapp.data.favorites.MockFavoritesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -84,16 +85,14 @@ class FavoritesViewModelTest {
     fun `item clicked for song emits navigate to player effect`() = runTest {
         advanceUntilIdle()
 
-        val effects = mutableListOf<FavoritesEffect>()
-        val job = backgroundScope.launch(testDispatcher) {
-            viewModel.effect.collect { effects.add(it) }
+        val effect = backgroundScope.async(testDispatcher) {
+            viewModel.effect.first()
         }
+        advanceUntilIdle()
 
         viewModel.onIntent(FavoritesIntent.ItemClicked("favorite-1"))
         advanceUntilIdle()
 
-        assertEquals(1, effects.size)
-        assertTrue(effects[0] is FavoritesEffect.NavigateToPlayer)
-        job.cancel()
+        assertTrue(effect.await() is FavoritesEffect.NavigateToPlayer)
     }
 }

@@ -1,5 +1,6 @@
 package com.turkcell.lyraapp.data.profile
 
+import com.turkcell.lyraapp.data.membership.MembershipDto
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 
@@ -19,7 +20,14 @@ class MockProfileRepository @Inject constructor() : ProfileRepository {
                 name = "Zeynep Kaya",
                 username = "zeynepk",
                 initials = "ZK",
-                membership = null,
+                membership = MembershipDto(
+                    planId = "one-time",
+                    type = "one-time",
+                    status = "active",
+                    autoRenew = false,
+                    startedAt = "2026-06-01T00:00:00Z",
+                    expiresAt = "2026-07-01T00:00:00Z"
+                ),
                 playlistCount = 127,
                 followersCount = "1.2B",
                 followingCount = 348
@@ -30,5 +38,10 @@ class MockProfileRepository @Inject constructor() : ProfileRepository {
     override suspend fun updateProfile(firstName: String, lastName: String, birthDate: String): Result<Unit> {
         delay(500)
         return Result.success(Unit)
+    }
+
+    override suspend fun recordPlay(songId: String): Result<Boolean> {
+        delay(100)
+        return Result.success(true)
     }
 }
